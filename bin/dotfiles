@@ -261,9 +261,9 @@ function confirmVaultAccess() {
   local lpass_version
   lpass_version=$(lpass --version)
   __task "LastPass CLI found: [$lpass_version] -- Authenticating..."
-  if ! _cmd "lpass status >/dev/null 2>&1"; then
+  if ! lpass status >/dev/null 2>&1; then
     printf "${OVERWRITE} ${RED}[X]  LastPass CLI found: [$lpass_version] -- Authentication failed\n"
-    printf " ${WARNING}${RED}   use "lpass login" to log into your LastPass Account.${NC}\n" 
+    printf " ${WARNING}${RED}   use 'lpass login' to log into your LastPass Account.${NC}\n" 
     exit 1
   fi
   _task_done && printf "${GREEN} [✓] Successfully authenticated with LastPass CLI! ☕\n"
