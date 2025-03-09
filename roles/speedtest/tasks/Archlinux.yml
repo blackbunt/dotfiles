@@ -1,0 +1,6 @@
+---
+- name: "Speedtest | ArchLinux | Install speedtest-cli"
+  ansible.builtin.pacman:
+    name: speedtest-cli
+    state: present
+  become: true
