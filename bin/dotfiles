@@ -211,6 +211,9 @@ function macos_setup() {
     __task "Installing Ansible"
     _cmd "brew install ansible"
   fi
+  ###########################################
+  # LastPass CLI missing here
+  ###########################################
   #if ! [ -x "$(command -v op)" ]; then
   #  __task "Installing 1Password CLI"
   #  _cmd "brew install 1password@beta"
@@ -259,7 +262,7 @@ function confirmVaultAccess() {
   lpass_version=$(lpass --version)
   __task "LastPass CLI found: [$lpass_version] -- Authenticating..."
   if ! _cmd "lpass status >/dev/null 2>&1"; then exit 1; fi
-  _task_done && printf "${GREEN} [✓] Successfully authenticated with 1Password CLI! ☕\n"
+  _task_done && printf "${GREEN} [✓] Successfully authenticated with LastPass CLI! ☕\n"
   return
 }
 
