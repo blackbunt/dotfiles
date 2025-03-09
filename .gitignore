@@ -5,3 +5,4 @@ roles/neovim/files/lazy-lock.json
 
 .DS_Store
 *.DS_Store
+test.sh
