@@ -1,25 +1,23 @@
 default_roles:
-  - system
-  # - 1password
-  #- aldente
-  #- asciiquarium
+  #ok- system
+  
+  
+  
   #- bash
   #- bat
   #- btop
   #- discord
   #- docker
   #- flatpak
-  - fonts
+  #ok- fonts
   #- fzf
   #- gh
   #- git
   #- go
-  #- hammerspoon
-  #- helm
-  #- k8s
-  #- k9s
-  #- kitty
-  #- lazygit
+  
+  
+  
+  - lazygit
   #- lsd
   #- lua
   #- nala

@@ -1,0 +1,6 @@
+---
+- name: "Lazygit | ArchLinux | Install lazygit"
+  community.general.pacman:
+    name: lazygit
+    state: present
+  become: true
