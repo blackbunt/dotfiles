@@ -5,12 +5,12 @@ default_roles:
   
   #- bash
   
-  - btop
+  #ok- btop
   #- discord
   #- docker
   #- flatpak
   #ok- fonts
-  #- fzf
+  #ok- fzf
   #- gh
   #- git
   #- go
