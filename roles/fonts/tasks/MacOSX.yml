@@ -1,5 +1,0 @@
----
-- name: "Fonts | MacOSX | Install"
-  community.general.homebrew:
-    name: font-powerline-symbols
-    state: present

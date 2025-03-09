@@ -1,0 +1,38 @@
+---
+- name: "Fonts | Install SFMono Nerd Font and Apple Fonts"
+  hosts: localhost
+  become: false
+  tasks:
+    - name: "Clone SFMono Nerd Font Repository"
+      ansible.builtin.git:
+        repo: "https://github.com/shaunsingh/SFMono-Nerd-Font-Ligaturized.git"
+        dest: "/tmp/SFMono-Nerd-Font-Ligaturized"
+        depth: 1
+
+    - name: "Ensure font directory exists"
+      ansible.builtin.file:
+        path: "~/.local/share/fonts"
+        state: directory
+        mode: "0755"
+
+    - name: "Copy SFMono Nerd Fonts to local fonts directory"
+      ansible.builtin.copy:
+        src: "/tmp/SFMono-Nerd-Font-Ligaturized/"
+        dest: "~/.local/share/fonts/"
+        remote_src: yes
+        mode: "0644"
+
+    - name: "Remove temporary font directory"
+      ansible.builtin.file:
+        path: "/tmp/SFMono-Nerd-Font-Ligaturized"
+        state: absent
+
+    - name: "Install Apple Fonts using yay"
+      ansible.builtin.command:
+        cmd: yay -S --noconfirm otf-apple-fonts
+      args:
+        creates: "/usr/share/fonts/OTF/Apple SF Pro.otf"
+
+    - name: "Update font cache"
+      ansible.builtin.command:
+        cmd: fc-cache -fv
