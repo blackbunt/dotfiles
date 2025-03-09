@@ -9,7 +9,7 @@ default_roles:
   #- discord
   #- docker
   #- flatpak
-  #ok- fonts
+  #ok#ok- fonts
   #ok- fzf
   #- gh
   #- git
@@ -17,40 +17,29 @@ default_roles:
   
   
   
-  #ok- lazygit
-  #ok- lsd
-  #- lua
-  #- nala
-  #- ncdu
-  #- neofetch
-  #- neovim
-  #- nerdfetch
-  #- npm
-  #- nvm
-  #- obsidian
-  #- podman
-  #- pwsh
-  #- python
-  #- raycast
-  # - ruby
-  # - rust
-  #- slides
-  #- spotify
-  #- ssh
-  #- sshfs
-  #- starship
-  #- taskfile
-  #- terraform
-  #- terragrunt
-  #- tldr
-  #- tmate
-  #- tmux
-  # - tshark
-  #- warp
-  #- whalebrew
-  # - zellij
-  #- zoxide
-  #- zsh
+  - lazygit
+  - lsd
+  
+  - nala
+  #nope- ncdu
+
+  - obsidian
+  #nope- podman
+  #nope- pwsh
+  - python
+  - speedtest
+  - spotify
+  - ssh
+  #maybe- sshfs
+  #maybe- starship
+  #nope- taskfile
+
+  - tldr
+
+
+ 
+  - zoxide
+  - zsh
 
 #git_user_name: "blackbunt"
 #op:
