@@ -4,3 +4,5 @@
     name: obsidian
     state: present
   become: true
+
+# TODO: Obsidian Repo cloning
