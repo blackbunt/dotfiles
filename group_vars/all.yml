@@ -28,7 +28,7 @@ default_roles:
   #nope- podman
   #nope- pwsh
   - python
-  
+  - speedtest
   - spotify
   #- ssh
   #maybe- sshfs
