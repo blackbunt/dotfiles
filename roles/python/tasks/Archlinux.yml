@@ -4,6 +4,5 @@
     name:
       - python
       - python-pip
-      - python-venv
     state: present
   become: true
