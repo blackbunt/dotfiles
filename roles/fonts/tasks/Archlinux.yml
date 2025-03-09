@@ -1,34 +1,34 @@
 ---
-- name: "Clone SFMono Nerd Font Repository"
+- name: "Fonts | ArchLinux | Clone SFMono Nerd Font Repository"
   ansible.builtin.git:
     repo: "https://github.com/shaunsingh/SFMono-Nerd-Font-Ligaturized.git"
     dest: "/tmp/SFMono-Nerd-Font-Ligaturized"
     depth: 1
 
-- name: "Ensure font directory exists"
+- name: "Fonts | ArchLinux | Ensure font directory exists"
   ansible.builtin.file:
     path: "~/.local/share/fonts"
     state: directory
     mode: "0755"
 
-- name: "Copy SFMono Nerd Fonts to local fonts directory"
+- name: "Fonts | ArchLinux | Copy SFMono Nerd Fonts to local fonts directory"
   ansible.builtin.copy:
     src: "/tmp/SFMono-Nerd-Font-Ligaturized/"
     dest: "~/.local/share/fonts/"
     remote_src: yes
     mode: "0644"
 
-- name: "Remove temporary font directory"
+- name: "Fonts | ArchLinux | Remove temporary font directory"
   ansible.builtin.file:
     path: "/tmp/SFMono-Nerd-Font-Ligaturized"
     state: absent
 
-- name: "Install Apple Fonts using yay"
+- name: "Fonts | ArchLinux | nstall Apple Fonts using yay"
   ansible.builtin.command:
     cmd: yay -S --noconfirm otf-apple-fonts
   args:
     creates: "/usr/share/fonts/OTF/Apple SF Pro.otf"
 
-- name: "Update font cache"
+- name: "Fonts | ArchLinux | Update font cache"
   ansible.builtin.command:
     cmd: fc-cache -fv
