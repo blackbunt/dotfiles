@@ -4,8 +4,8 @@ default_roles:
   
   
   #- bash
-  #- bat
-  #- btop
+  
+  - btop
   #- discord
   #- docker
   #- flatpak

@@ -1,0 +1,6 @@
+---
+- name: "btop | ArchLinux | Install btop"
+  community.general.pacman:
+    name: btop
+    state: present
+  become: true
