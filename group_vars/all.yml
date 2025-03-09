@@ -9,7 +9,7 @@ default_roles:
   #- discord
   #- docker
   #- flatpak
-  - fonts
+  #ok- fonts
   - fastfetch
   - fzf
   #- gh
@@ -30,7 +30,7 @@ default_roles:
   - python
   - speedtest
   - spotify
-  #- ssh
+  - ssh
   #maybe- sshfs
   #maybe- starship
   #nope- taskfile
