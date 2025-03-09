@@ -1,0 +1,5 @@
+---
+- name: "SSH | Deploy SSH keys from LastPass"
+  when: lpass_installed
+  ansible.builtin.include_tasks: ssh_keys.yml
+  loop: "{{ ssh_keys }}"
