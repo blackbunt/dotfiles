@@ -1,3 +1,0 @@
-# $XDG_CONFIG_HOME/k9s/aliases.yaml
-aliases:
-  dep: apps/v1/deployments

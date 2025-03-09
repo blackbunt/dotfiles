@@ -1,5 +1,0 @@
----
-- name: "NPM | MacOSX | Install npm"
-  community.general.homebrew:
-    name: npm
-    state: present
