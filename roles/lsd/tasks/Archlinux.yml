@@ -1,0 +1,6 @@
+---
+- name: "LSD | Archlinux | Install lsd"
+  community.general.pacman:
+    name: lsd
+    state: present
+  become: true

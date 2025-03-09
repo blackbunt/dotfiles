@@ -17,8 +17,8 @@ default_roles:
   
   
   
-  - lazygit
-  #- lsd
+  #ok- lazygit
+  #ok- lsd
   #- lua
   #- nala
   #- ncdu
