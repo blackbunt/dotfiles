@@ -214,12 +214,12 @@ This shell script is also used to initialize your environment after bootstrappin
 > You must follow required steps before running this command or things may become unusable until fixed.
 
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/TechDufus/dotfiles/main/bin/dotfiles)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/blackbunt/dotfiles/main/bin/dotfiles)"
 ```
 
 If you want to run only a specific role, you can specify the following bash command:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/TechDufus/dotfiles/main/bin/dotfiles | bash -s -- --tags comma,seperated,tags
+curl -fsSL https://raw.githubusercontent.com/blackbunt/dotfiles/main/bin/dotfiles | bash -s -- --tags comma,seperated,tags
 ```
 
 ### Update
