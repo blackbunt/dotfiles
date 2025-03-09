@@ -158,7 +158,6 @@ function endeavouros_setup() {
       LC_MEASUREMENT=de_DE.UTF-8 \
       LC_IDENTIFICATION=de_DE.UTF-8"
 }
-}
 
 function arch_setup() {
   if ! [ -x "$(command -v ansible)" ]; then
@@ -197,7 +196,6 @@ function arch_setup() {
       LC_TELEPHONE=de_DE.UTF-8 \
       LC_MEASUREMENT=de_DE.UTF-8 \
       LC_IDENTIFICATION=de_DE.UTF-8"
-}
 }
 
 function macos_setup() {
