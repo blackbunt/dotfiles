@@ -1,0 +1,12 @@
+---
+- name: Detect LastPass
+  ansible.builtin.command:
+    cmd: which lpass
+  changed_when: false
+  failed_when: false
+  register: lpass_installed
+
+- name: Register LastPass
+  ansible.builtin.set_fact:
+    op_installed: "{{ lpass_installed.rc == 0 }}"
+  when: lpass_installed.rc == 0
