@@ -66,14 +66,14 @@ zinit cdreplay -q
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # Keybindings
-bindkey -e
-bindkey '^p' history-search-backward
-bindkey '^n' history-search-forward
-bindkey '^[w' kill-region
-bindkey '^n' forward-word # auto-accept partial suggestion from zsh-autosuggestion
-bindkey '^[[3~' delete-char
-bindkey '^[OH' beginning-of-line
-bindkey '^[OF' end-of-line
+#bindkey -e
+#bindkey '^p' history-search-backward
+#bindkey '^n' history-search-forward
+#bindkey '^[w' kill-region
+#bindkey '^n' forward-word # auto-accept partial suggestion from zsh-autosuggestion
+#bindkey '^[[3~' delete-char
+#bindkey '^[OH' beginning-of-line
+#bindkey '^[OF' end-of-line
 
 
 # History
