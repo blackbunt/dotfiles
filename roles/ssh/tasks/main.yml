@@ -1,5 +1,59 @@
 ---
-- name: "SSH | Deploy SSH keys from LastPass"
+- name: "SSH | Ensure ~/.ssh directory exists"
+  ansible.builtin.file:
+    path: "{{ ansible_user_dir }}/.ssh"
+    state: directory
+    mode: "0700"
+
+# searches lastpass for title 'SSH key: keyname'
+- name: "SSH | Get list of SSH keys with IDs from LastPass"
   when: lpass_installed
-  ansible.builtin.include_tasks: ssh_keys.yml
+  ansible.builtin.command: "lpass show --basic-regexp 'SSH key:'"
+  register: lpass_ssh_entries
+  changed_when: false
+  no_log: true
+
+# for every matched SSH key: return id and name
+- name: "SSH | Extract SSH key names and IDs"
+  when: lpass_ssh_entries
+  ansible.builtin.set_fact:
+    ssh_keys: >-
+      {{
+        lpass_ssh_entries.stdout_lines
+        | select('search', 'SSH key:')
+        | map('regex_replace', '^.*SSH key: (.*?) \[id: ([0-9]+)\]$', '{"name": "\1", "id": "\2"}')
+        | map('from_json')
+        | list
+      }}
+  register: lpass_ssh_entries_list
+  changed_when: false
+  no_log: true
+
+# deploy every ssh key /home/.ssh/{keyname}
+- name: "SSH | Deploy SSH keys from LastPass"
+  when: lpass_ssh_entries_list
+  ansible.builtin.include_tasks: deploy_key.yml
   loop: "{{ ssh_keys }}"
+  loop_control:
+    loop_var: item
+  no_log: true
+  register: lpass_ssh_deploy
+
+# SSH Config aus LastPass abrufen
+- name: "SSH | Get SSH config from LastPass"
+  when: lpass_ssh_deploy
+  ansible.builtin.command: "lpass show --notes 'SSH-config'"
+  register: lp_ssh_config
+  changed_when: false
+  no_log: true
+  failed_when: lp_ssh_config.rc != 0
+
+# SSH Config deployen
+- name: "SSH | Deploy SSH config"
+  when: lp_ssh_config is defined and lp_ssh_config.stdout | length > 0
+  ansible.builtin.copy:
+    dest: "{{ ansible_user_dir }}/.ssh/config"
+    content: "{{ lp_ssh_config.stdout }}"
+    mode: "0644"
+  no_log: true
+
