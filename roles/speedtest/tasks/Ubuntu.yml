@@ -1,6 +1,0 @@
----
-- name: "Speedtest | Install speedtest-cli"
-  ansible.builtin.apt:
-    name: speedtest-cli
-    state: present
-  become: true

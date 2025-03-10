@@ -1,8 +1,0 @@
----
-- name: "Python | Install"
-  community.general.pacman:
-    name:
-      - python
-      - python-pip
-    state: present
-  become: true

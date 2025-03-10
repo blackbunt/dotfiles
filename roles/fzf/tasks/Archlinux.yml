@@ -1,6 +1,0 @@
----
-- name: "FZF | ArchLinux | Install fzf"
-  community.general.pacman:
-    name: fzf
-    state: present
-  become: true
