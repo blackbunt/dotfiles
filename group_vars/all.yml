@@ -3,17 +3,15 @@ default_roles:
   
   
   
-  #- bash
+  #todo- bash
   
-  #ok- btop
   #ok- btop
   #- discord
   #- docker
   #- flatpak
-  #ok#ok- fonts
+  #ok- fonts
   #ok- fzf
-  #ok#ok- fonts
-  #ok- fzf
+  
   #- gh
   #- git
   
