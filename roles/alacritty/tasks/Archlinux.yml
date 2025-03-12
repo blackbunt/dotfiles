@@ -1,23 +1,18 @@
 ---
-- name: "Alacritty | {{ ansible_distribution }} | Install and Configure Alacritty"
-  hosts: localhost
-  become: true
+- name: Install Alacritty
+  community.general.pacman:
+    name: alacritty
+    state: present
 
-  tasks:
-    - name: Install Alacritty
-      community.general.pacman:
-        name: alacritty
-        state: present
+- name: Ensure Alacritty config directory exists
+  file:
+    path: "{{ ansible_env.HOME }}/.config/alacritty"
+    state: directory
+    mode: '0755'
 
-    - name: Ensure Alacritty config directory exists
-      file:
-        path: "{{ ansible_env.HOME }}/.config/alacritty"
-        state: directory
-        mode: '0755'
-
-    - name: Copy Alacritty configuration file
-      copy:
-        src: files/Archlinux_alacritty.yml
-        dest: "{{ ansible_env.HOME }}/.config/alacritty/alacritty.yml"
-        owner: "{{ ansible_env.USER }}"
-        mode: '0644'
+- name: Copy Alacritty configuration file
+  copy:
+    src: files/Archlinux_alacritty.yml
+    dest: "{{ ansible_env.HOME }}/.config/alacritty/alacritty.yml"
+    owner: "{{ ansible_env.USER }}"
+    mode: '0644'
