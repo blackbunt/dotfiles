@@ -71,9 +71,9 @@ zinit cdreplay -q
 #bindkey '^n' history-search-forward
 #bindkey '^[w' kill-region
 #bindkey '^n' forward-word # auto-accept partial suggestion from zsh-autosuggestion
-#bindkey '^[[3~' delete-char
-#bindkey '^[OH' beginning-of-line
-#bindkey '^[OF' end-of-line
+bindkey '^[[3~' delete-char
+bindkey '^[[H' beginning-of-line
+bindkey '^[[F' end-of-line
 
 
 # History
