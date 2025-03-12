@@ -42,3 +42,4 @@ export RDP_HOME="$HOME/dev/raft/rdp-operator"
 export DF_INFRA_HOME="$HOME/dev/raft/df-infra"
 export DFDEV_GIT_PROTOCOL="ssh"
 export AWS_PROFILE="Raft"
+$RESTORE
