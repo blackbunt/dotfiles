@@ -23,7 +23,7 @@
     path: "/tmp/SFMono-Nerd-Font-Ligaturized"
     state: absent
 
-- name: "Fonts | ArchLinux | nstall Apple Fonts using yay"
+- name: "Fonts | ArchLinux | Install Apple Fonts using yay"
   ansible.builtin.command:
     cmd: yay -S --noconfirm otf-apple-fonts
   args:
