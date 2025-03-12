@@ -1,6 +1,8 @@
 #!/usr/bin/env zsh
 
 # color codes
+
+# problems with gum! (BOLD use unset BOLD)
 export RESTORE='\033[0m'
 export NC='\033[0m'
 export BOLD='\033[1m'
