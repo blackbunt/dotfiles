@@ -17,10 +17,10 @@ default_roles:
   
   
   
-  #ok- lazygit
-  #ok- lsd
+  - lazygit
+  - lsd
   #- lua
-  #- nala
+  - nala
   #- ncdu
   #- neofetch
   #- neovim
@@ -42,7 +42,7 @@ default_roles:
   #- taskfile
   #- terraform
   #- terragrunt
-  #- tldr
+  - tldr
   #- tmate
   #- tmux
   # - tshark
@@ -50,7 +50,7 @@ default_roles:
   #- whalebrew
   # - zellij
   #- zoxide
-  #- zsh
+  - zsh
 
 #git_user_name: "blackbunt"
 #op:
