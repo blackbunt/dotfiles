@@ -1,0 +1,6 @@
+---
+- name: "LSD | Archlinux | Install ncdu"
+  community.general.pacman:
+    name: ncdu
+    state: present
+  become: true
