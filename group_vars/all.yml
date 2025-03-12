@@ -6,9 +6,12 @@ default_roles:
   #- bash
   
   #ok- btop
+  #ok- btop
   #- discord
   #- docker
   #- flatpak
+  #ok#ok- fonts
+  #ok- fzf
   #ok#ok- fonts
   #ok- fzf
   #- gh
@@ -21,19 +24,18 @@ default_roles:
   - lsd
   
   - nala
-  #nope- ncdu
-
   - obsidian
-  #nope- podman
-  #nope- pwsh
+
+  
   - python
-  - speedtest
+
   - spotify
   - ssh
-  #maybe- sshfs
-  #maybe- starship
-  #nope- taskfile
-
+  - sshfs
+  #- starship
+  #- taskfile
+  #- terraform
+  #- terragrunt
   - tldr
 
 
