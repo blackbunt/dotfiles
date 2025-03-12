@@ -14,30 +14,29 @@ default_roles:
   #- gh
   #- git
   
-  
-  
-  
   - lazygit
   - lsd
-  
+  #- lua
   - nala
-  #nope- ncdu
-
   - obsidian
-  #nope- podman
-  #nope- pwsh
+
+  
   - python
-  - speedtest
+
   - spotify
   - ssh
-  #maybe- sshfs
-  #maybe- starship
-  #nope- taskfile
-
+  - sshfs
+  #- starship
+  #- taskfile
+  #- terraform
+  #- terragrunt
   - tldr
-
-
- 
+  #- tmate
+  #- tmux
+  # - tshark
+  #- warp
+  #- whalebrew
+  # - zellij
   - zoxide
   - zsh
 
