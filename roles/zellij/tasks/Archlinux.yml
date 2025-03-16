@@ -3,7 +3,8 @@
   community.general.pacman:
     name: zellij
     state: present
-
+  become: true
+  
 - name: "Zellij | Ensure zellij config directory exists"
   ansible.builtin.file:
     path: "{{ ansible_user_dir }}/.config/zellij"

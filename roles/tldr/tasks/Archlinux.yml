@@ -3,3 +3,4 @@
   community.general.pacman:
     name: tldr
     state: present
+  become: true
