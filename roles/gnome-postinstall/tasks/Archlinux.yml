@@ -1,12 +1,12 @@
 ---
-- name: "Check if GNOME is installed (Arch)"
+- name: "Gnome-Postinstall | Check if GNOME is installed (Arch)"
   ansible.builtin.command:
     cmd: "pacman -Q gnome-shell"
   register: gnome_installed
   changed_when: false
   failed_when: gnome_installed.rc != 0
 
-- name: "Check if GNOME session is running"
+- name: "Gnome-Postinstall | Check if GNOME session is running"
   ansible.builtin.shell:
     cmd: "echo $XDG_CURRENT_DESKTOP"
   register: gnome_running
@@ -20,7 +20,7 @@
     msg: "GNOME session is currently running!"
   when: gnome_running
 
-- name: "Ensure GNOME Tweaks is installed (Arch)"
+- name: "Gnome-Postinstall | Ensure GNOME Tweaks is installed (Arch)"
   ansible.builtin.pacman:
     name: gnome-tweaks
     state: present
@@ -33,44 +33,44 @@
 
 # Check if fonts are installed, can not set fonts if not installed!
 # Needed if tag gnome-postinstall is runned without the fonts tag!
-- name: "Check and Apply GNOME Font Settings"
+- name: "Gnome-Postinstall | Check and Apply GNOME Font Settings"
   block:
-    - name: "Check if SFMono Nerd Font is installed"
+    - name: "Gnome-Postinstall | Check if SFMono Nerd Font is installed"
       ansible.builtin.stat:
         path: "~/.local/share/fonts/LigaSFMonoNerdFont-Regular.otf"
       register: sfmono_installed
       when: sfmono_installed is not defined
 
-    - name: "Check if Apple Fonts are installed"
+    - name: "Gnome-Postinstall | Check if Apple Fonts are installed"
       ansible.builtin.stat:
         path: "~/.cache/yay/otf-apple-fonts/src/SF-Pro-Text-Medium.otf"
       register: apple_fonts_installed
       when: apple_fonts_installed is not defined
 
-    - name: "Abort if required fonts are missing"
+    - name: "Gnome-Postinstall | Abort if required fonts are missing"
       ansible.builtin.fail:
         msg: "SFMono Nerd Font or Apple Fonts are missing! Run the fonts installation task first."
       when: not sfmono_installed.stat.exists or not apple_fonts_installed.stat.exists
 
-    - name: "Set fonts and apply font tweaks"
+    - name: "Gnome-Postinstall | Set fonts and apply font tweaks"
       block:
-        - name: "Set GNOME UI font"
+        - name: "Gnome-Postinstall | Set GNOME UI font"
           ansible.builtin.command:
             cmd: "gsettings set org.gnome.desktop.interface font-name 'SF Pro Text 11'"
 
-        - name: "Set GNOME document font"
+        - name: "Gnome-Postinstall | Set GNOME document font"
           ansible.builtin.command:
             cmd: "gsettings set org.gnome.desktop.interface document-font-name 'SF Pro Text 11'"
 
-        - name: "Set GNOME monospace font"
+        - name: "Gnome-Postinstall | Set GNOME monospace font"
           ansible.builtin.command:
             cmd: "gsettings set org.gnome.desktop.interface monospace-font-name 'Liga SFMono Nerd Font 11'"
 
-        - name: "Disable font hinting (GNOME Tweaks)"
+        - name: "Gnome-Postinstall | Disable font hinting (GNOME Tweaks)"
           ansible.builtin.command:
             cmd: "gsettings set org.gnome.desktop.interface font-hinting 'none'"
 
-        - name: "Set font antialiasing to subpixel (GNOME Tweaks)"
+        - name: "Gnome-Postinstall | Set font antialiasing to subpixel (GNOME Tweaks)"
           ansible.builtin.command:
             cmd: "gsettings set org.gnome.desktop.interface font-antialiasing 'rgba'"
       when: 
@@ -80,23 +80,23 @@
         - apple_fonts_installed.stat.exists
         - gnome_tweaks_result is not failed
 
-- name: "Install and Configure Kora Icon Theme"
+- name: "Gnome-Postinstall | Install and Configure Kora Icon Theme"
   block:
-    - name: "Check if Kora Icon Theme is installed"
+    - name: "Gnome-Postinstall | Check if Kora Icon Theme is installed"
       ansible.builtin.command:
         cmd: "pacman -Q kora-icon-theme"
       register: kora_installed
       changed_when: false
       failed_when: false
 
-    - name: "Check if Kora Icon Theme is already set"
+    - name: "Gnome-Postinstall | Check if Kora Icon Theme is already set"
       ansible.builtin.command:
         cmd: "gsettings get org.gnome.desktop.interface icon-theme"
       register: current_icon_theme
       changed_when: false
       failed_when: false
 
-    - name: "Skip installation if Kora Icon Theme is already set"
+    - name: "Gnome-Postinstall | Skip installation if Kora Icon Theme is already set"
       ansible.builtin.debug:
         msg: "Kora Icon Theme is already set and installed, skipping installation!"
       when:
@@ -104,7 +104,7 @@
         - "'kora' in current_icon_theme.stdout"
       changed_when: false
 
-    - name: "Install Kora Icon Theme (if needed)"
+    - name: "Gnome-Postinstall | Install Kora Icon Theme (if needed)"
       ansible.builtin.pacman:
         name: kora-icon-theme
         state: present
@@ -112,7 +112,7 @@
       when:
         - kora_installed.rc != 0
 
-    - name: "Set Kora Icon Theme as default (GNOME)"
+    - name: "Gnome-Postinstall | Set Kora Icon Theme as default (GNOME)"
       ansible.builtin.command:
         cmd: "gsettings set org.gnome.desktop.interface icon-theme 'kora'"
       when:
@@ -120,23 +120,23 @@
   when:
     - gnome_running.rc == 0
 
-- name: "Install and Configure Apple Cursor"
+- name: "Gnome-Postinstall | Install and Configure Apple Cursor"
   block:
-    - name: "Check if apple_cursor is installed"
+    - name: "Gnome-Postinstall | Check if apple_cursor is installed"
       ansible.builtin.command:
         cmd: "pacman -Q apple_cursor"
       register: apple_cursor_installed
       changed_when: false
       failed_when: false
 
-    - name: "Check if Apple Cursor is already set"
+    - name: "Gnome-Postinstall | Check if Apple Cursor is already set"
       ansible.builtin.command:
         cmd: "gsettings get org.gnome.desktop.interface cursor-theme"
       register: current_cursor
       changed_when: false
       failed_when: false
 
-    - name: "Skip installation if Apple Cursor is already set"
+    - name: "Gnome-Postinstall | Skip installation if Apple Cursor is already set"
       ansible.builtin.debug:
         msg: "Apple Cursor is already set and installed, skipping installation!"
       when:
@@ -144,20 +144,20 @@
         - "'MacOs' in current_cursor.stdout"
       changed_when: false
 
-    - name: "Install Apple Cursor using yay (if needed)"
+    - name: "Gnome-Postinstall | Install Apple Cursor using yay (if needed)"
       ansible.builtin.command:
         cmd: "yay -S --noconfirm apple_cursor"
       when:
         - apple_cursor_installed.rc != 0
       become: false
 
-    - name: "Set Apple Cursor as default (GNOME)"
+    - name: "Gnome-Postinstall | Set Apple Cursor as default (GNOME)"
       ansible.builtin.command:
         cmd: "gsettings set org.gnome.desktop.interface cursor-theme 'MacOs'"
       when:
         - apple_cursor_installed.rc != 0 or "'MacOs' not in current_cursor.stdout"
 
-    - name: "Ensure cursor theme is set in XDG config"
+    - name: "Gnome-Postinstall | Ensure cursor theme is set in XDG config"
       ansible.builtin.lineinfile:
         path: "{{ ansible_env.HOME }}/.Xresources"
         line: "Xcursor.theme: MacOs"
@@ -165,7 +165,7 @@
       when:
         - apple_cursor_installed.rc != 0 or "'MacOs' not in current_cursor.stdout"
 
-    - name: "Reload Xresources"
+    - name: "Gnome-Postinstall | Reload Xresources"
       ansible.builtin.command:
         cmd: "xrdb -merge ~/.Xresources"
       changed_when: false
@@ -174,23 +174,23 @@
   when:
     - gnome_running.rc == 0
 
-- name: "Configure GNOME Window Settings"
+- name: "Gnome-Postinstall | Configure GNOME Window Settings"
   block:
-    - name: "Check current GNOME button layout"
+    - name: "Gnome-Postinstall | Check current GNOME button layout"
       ansible.builtin.command:
         cmd: "gsettings get org.gnome.desktop.wm.preferences button-layout"
       register: current_button_layout
       changed_when: false
       failed_when: false
 
-    - name: "Check if new windows centering is enabled"
+    - name: "Gnome-Postinstall | Check if new windows centering is enabled"
       ansible.builtin.command:
         cmd: "gsettings get org.gnome.mutter center-new-windows"
       register: current_window_centering
       changed_when: false
       failed_when: false
 
-    - name: "Skip if GNOME window settings are already set"
+    - name: "Gnome-Postinstall | Skip if GNOME window settings are already set"
       ansible.builtin.debug:
         msg: "GNOME window settings are already configured, skipping!"
       when:
@@ -198,13 +198,13 @@
         - "'true' in current_window_centering.stdout"
       changed_when: false
 
-    - name: "Set GNOME window button layout"
+    - name: "Gnome-Postinstall | Set GNOME window button layout"
       ansible.builtin.command:
         cmd: "gsettings set org.gnome.desktop.wm.preferences button-layout 'appmenu:minimize,maximize,close'"
       when:
         - "'appmenu:minimize,maximize,close' not in current_button_layout.stdout"
 
-    - name: "Enable new window centering in GNOME"
+    - name: "Gnome-Postinstall | Enable new window centering in GNOME"
       ansible.builtin.command:
         cmd: "gsettings set org.gnome.mutter center-new-windows true"
       when:
@@ -212,22 +212,22 @@
   when:
     - gnome_running.rc == 0
 
-- name: "Install and Manage GNOME Extensions"
+- name: "Gnome-Postinstall | Install and Manage GNOME Extensions"
   block:
-    - name: "Check if gnome-extensions-cli is installed"
+    - name: "Gnome-Postinstall | Check if gnome-extensions-cli is installed"
       ansible.builtin.command:
         cmd: "pacman -Q gnome-extensions-cli"
       register: gext_installed
       changed_when: false
       failed_when: false
 
-    - name: "Install gnome-extensions-cli using yay (if needed)"
+    - name: "Gnome-Postinstall | Install gnome-extensions-cli using yay (if needed)"
       ansible.builtin.command:
         cmd: "yay -S --noconfirm gnome-extensions-cli"
       when: gext_installed.rc != 0
       become: false
 
-    - name: "Define list of GNOME extensions to install"
+    - name: "Gnome-Postinstall | Define list of GNOME extensions to install"
       set_fact:
         gnome_extensions:
           - Airpod-Battery-Monitor@maniacx.github.com
@@ -248,28 +248,28 @@
           - Vitals@CoreCoding.com
           - wifiqrcode@glerro.pm.me
 
-    - name: "Check already installed GNOME extensions"
+    - name: "Gnome-Postinstall | Check already installed GNOME extensions"
       ansible.builtin.command:
         cmd: "gext list -a"
       register: installed_extensions
       changed_when: false
       failed_when: false
 
-    - name: "Install missing GNOME extensions"
+    - name: "Gnome-Postinstall | Install missing GNOME extensions"
       ansible.builtin.command:
         cmd: "gext install {{ item }}"
       loop: "{{ gnome_extensions }}"
       when: "'{{ item }}' not in installed_extensions.stdout"
       changed_when: false
 
-    - name: "Enable GNOME extensions"
+    - name: "Gnome-Postinstall | Enable GNOME extensions"
       ansible.builtin.command:
         cmd: "gext enable {{ item }}"
       loop: "{{ gnome_extensions }}"
       changed_when: false
       when: "'{{ item }}' in installed_extensions.stdout"
 
-    - name: "Update all GNOME extensions"
+    - name: "Gnome-Postinstall | Update all GNOME extensions"
       ansible.builtin.command:
         cmd: "gext update --yes"
       changed_when: false
