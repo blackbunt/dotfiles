@@ -1,0 +1,6 @@
+---
+- name: "Signal Desktop | Archlinux | Install Signal Desktop"
+  community.general.pacman:
+    name: signal-desktop
+    state: present
+  become: true

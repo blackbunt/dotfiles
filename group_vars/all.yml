@@ -26,7 +26,7 @@ default_roles:
 
   - pika-backup
   - python
-
+  - signal-desktop
   - spotify
   - ssh
   - sshfs
