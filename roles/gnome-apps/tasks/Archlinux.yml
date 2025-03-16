@@ -1,0 +1,16 @@
+- name: Gnome-Apps | Install GNOME Apps
+  block:
+    - name: Install GNOME applications via pacman
+      pacman:
+        name:
+          - gnome-firmware
+          - gnome-maps
+          - gnome-mines
+          - gnome-music
+          - gnome-photos
+          - gnome-calendar
+          - gnome-contacts
+          - railway
+        state: present
+        update_cache: true
+      become: true

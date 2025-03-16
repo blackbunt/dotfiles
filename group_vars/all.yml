@@ -16,7 +16,7 @@ default_roles:
   - git
   - gnome-postinstall
   - gnome-wallpaper
-  
+  - gnome-apps
   
   
   - lazygit
