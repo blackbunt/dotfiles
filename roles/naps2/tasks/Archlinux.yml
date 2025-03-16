@@ -1,28 +1,28 @@
 ---
 - name: Naps2 | Install Naps2 & sane-airscan
-  hosts: localhost
-  become: true
-  tasks:
+  block:
     - name: Naps2 | Check if sane-airscan is installed
       ansible.builtin.command:
         cmd: "pacman -Q sane-airscan"
       register: sane_airscan_installed
       changed_when: false
       failed_when: false
+      become: true
 
     - name: Naps2 | Install sane-airscan via pacman
       pacman:
         name: sane-airscan
         state: present
         update_cache: true
+      become: true
       when: sane_airscan_installed.rc != 0
 
     - name: Naps2 | Check if yay is installed
       ansible.builtin.command:
-        cmd: "command -v yay"
+        cmd: "which yay"
       register: yay_installed
       changed_when: false
-      failed_when: false
+      failed_when: yay_installed.rc != 0
 
     - name: Naps2 | Install yay if not present
       block:
@@ -33,6 +33,7 @@
               - git
             state: present
             update_cache: true
+          become: true
 
         - name: Naps2 | Clone yay repository
           ansible.builtin.git:
@@ -56,6 +57,13 @@
       changed_when: false
       failed_when: false
       when: yay_installed.rc == 0
+
+    - name: Naps2 | Clean yay cache for NAPS2
+      ansible.builtin.command:
+        cmd: "yay -Scc --noconfirm"
+      changed_when: true
+      become: false
+      when: yay_installed.rc == 0 and naps2_installed.rc != 0
 
     - name: Naps2 | Install naps2 via yay
       ansible.builtin.command:
