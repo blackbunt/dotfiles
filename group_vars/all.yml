@@ -27,6 +27,7 @@ default_roles:
   - ncdu
   - obsidian
   - onlyoffice
+  - pacseek
   - pika-backup
   - python
   - signal-desktop

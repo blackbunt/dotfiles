@@ -1,0 +1,16 @@
+- name: Pacseek | Archlinux | Install and Configure Pacseek
+  block:
+    - name: Check if Pacseek is installed
+      ansible.builtin.command:
+        cmd: "pacman -Q pacseek"
+      register: pacseek_installed
+      changed_when: false
+      failed_when: false
+      become: true
+
+    - name: Install Pacseek via pacman
+      pacman:
+        name: pacseek
+        state: present
+        update_cache: true
+      when: pacseek_installed.rc != 0
