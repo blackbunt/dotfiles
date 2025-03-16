@@ -1,15 +1,20 @@
----
-- name: "Fonts | ArchLinux | Clone SFMono Nerd Font Repository"
-  ansible.builtin.git:
-    repo: "https://github.com/shaunsingh/SFMono-Nerd-Font-Ligaturized.git"
-    dest: "/tmp/SFMono-Nerd-Font-Ligaturized"
-    depth: 1
-
 - name: "Fonts | ArchLinux | Ensure font directory exists"
   ansible.builtin.file:
     path: "~/.local/share/fonts"
     state: directory
     mode: "0755"
+
+- name: "Fonts | ArchLinux | Check if SFMono Nerd Font is already installed"
+  ansible.builtin.stat:
+    path: "~/.local/share/fonts/LigaSFMonoNerdFont-Regular.otf"
+  register: sfmono_installed
+
+- name: "Fonts | ArchLinux | Clone SFMono Nerd Font Repository"
+  ansible.builtin.git:
+    repo: "https://github.com/shaunsingh/SFMono-Nerd-Font-Ligaturized.git"
+    dest: "/tmp/SFMono-Nerd-Font-Ligaturized"
+    depth: 1
+  when: not sfmono_installed.stat.exists
 
 - name: "Fonts | ArchLinux | Copy SFMono Nerd Fonts to local fonts directory"
   ansible.builtin.copy:
@@ -17,17 +22,22 @@
     dest: "~/.local/share/fonts/"
     remote_src: yes
     mode: "0644"
+  when: not sfmono_installed.stat.exists
 
 - name: "Fonts | ArchLinux | Remove temporary font directory"
   ansible.builtin.file:
     path: "/tmp/SFMono-Nerd-Font-Ligaturized"
     state: absent
 
+- name: "Fonts | ArchLinux | Check if Apple Fonts are installed"
+  ansible.builtin.stat:
+    path: "~/.cache/yay/otf-apple-fonts/src/SF-Pro-Text-Medium.otf"
+  register: apple_fonts_installed
+
 - name: "Fonts | ArchLinux | Install Apple Fonts using yay"
   ansible.builtin.command:
     cmd: yay -S --noconfirm otf-apple-fonts
-  args:
-    creates: "/usr/share/fonts/OTF/Apple SF Pro.otf"
+  when: not apple_fonts_installed.stat.exists
 
 - name: "Fonts | ArchLinux | Update font cache"
   ansible.builtin.command:
