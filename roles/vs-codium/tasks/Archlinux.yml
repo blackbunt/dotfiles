@@ -1,0 +1,6 @@
+---
+- name: "VS-Codium | {{ ansible_distribution }} | Install VS-Codium"
+  community.general.pacman:
+    name: vscodium-bin
+    state: present
+  become: true
