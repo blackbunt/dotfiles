@@ -1,0 +1,50 @@
+---
+- name: "Check if GNOME is installed (Arch)"
+  ansible.builtin.command:
+    cmd: "pacman -Q gnome-shell"
+  register: gnome_installed
+  changed_when: false
+  failed_when: gnome_installed.rc != 0
+
+- name: "Check if GNOME session is running"
+  ansible.builtin.shell:
+    cmd: "echo $XDG_CURRENT_DESKTOP"
+  register: gnome_running
+  changed_when: false
+  failed_when: false
+  when: gnome_installed.rc == 0
+
+- name: "Check if Linux Dynamic Wallpapers repo exists"
+  stat:
+    path: "{{ ansible_env.HOME }}/.local/share/backgrounds/Linux_Dynamic_Wallpapers/.git"
+  register: repo_status
+
+- name: "Update existing repository (git pull)"
+  ansible.builtin.command:
+    cmd: "git pull"
+    chdir: "{{ ansible_env.HOME }}/.local/share/backgrounds/Linux_Dynamic_Wallpapers"
+  when: repo_status.stat.exists
+  changed_when: true
+
+- name: "Clone Linux Dynamic Wallpapers repository"
+  ansible.builtin.git:
+    repo: "https://github.com/saint-13/Linux_Dynamic_Wallpapers.git"
+    dest: "{{ ansible_env.HOME }}/.local/share/backgrounds/Linux_Dynamic_Wallpapers"
+    version: main
+    depth: 1
+  when: not repo_status.stat.exists
+
+- name: "Run the Linux Dynamic Wallpapers installation script"
+  ansible.builtin.command:
+    cmd: "sudo bash install.sh"
+    chdir: "{{ ansible_env.HOME }}/.local/share/backgrounds/Linux_Dynamic_Wallpapers"
+  changed_when: true
+
+- name: "Set GNOME wallpaper"
+  ansible.builtin.shell: |
+    export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
+    gsettings set org.gnome.desktop.background picture-uri 'file://{{ ansible_env.HOME }}/.local/share/backgrounds/Linux_Dynamic_Wallpapers/Dynamic_Wallpapers/Big_Sur_2/bigsur-1.jpg'
+  args:
+    executable: /bin/bash
+  become: false
+  when: gnome_running
