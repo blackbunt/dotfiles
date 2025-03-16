@@ -15,7 +15,7 @@ fi
 
 if is_local_gui_session; then
   # easily switch on/off
-  exec zellij
+  #exec zellij
 fi
 
 
