@@ -1,0 +1,49 @@
+---
+- name: Naps2 | Install Naps2 & sane-airscan
+  hosts: localhost
+  become: true
+  tasks:
+    - name: Install sane-airscan via pacman
+      pacman:
+        name: sane-airscan
+        state: present
+        update_cache: true
+
+    - name: Check if yay is installed
+      ansible.builtin.command:
+        cmd: "command -v yay"
+      register: yay_installed
+      changed_when: false
+      failed_when: false
+
+    - name: Install yay if not present
+      block:
+        - name: Install base-devel and git
+          pacman:
+            name:
+              - base-devel
+              - git
+            state: present
+            update_cache: true
+
+        - name: Clone yay repository
+          ansible.builtin.git:
+            repo: "https://aur.archlinux.org/yay.git"
+            dest: "/tmp/yay"
+            version: master
+          when: yay_installed.rc != 0
+
+        - name: Build and install yay
+          ansible.builtin.command:
+            cmd: "makepkg -si --noconfirm"
+            chdir: "/tmp/yay"
+          when: yay_installed.rc != 0
+          become: false
+      when: yay_installed.rc != 0
+
+    - name: Install naps2 via yay
+      ansible.builtin.command:
+        cmd: "yay -S --noconfirm naps2"
+      changed_when: true
+      become: false
+      when: yay_installed.rc == 0
