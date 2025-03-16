@@ -2,11 +2,22 @@ is_ssh_session() {
   [[ -n "$SSH_CONNECTION" || -n "$SSH_CLIENT" || -n "$SSH_TTY" ]]
 }
 
+is_local_gui_session() {
+  [[ -z "$ZELLIJ" && -n "$DISPLAY" && -z "$SSH_TTY" ]]
+}
+
+
 if is_ssh_session; then
   # REASON: When sshing via ghostty, the remote terminal borks,
   # so we need to set TERM to xterm-256color
   export TERM=xterm-256color
 fi
+
+if is_local_gui_session; then
+  # easily switch on/off
+  exec zellij
+fi
+
 
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -112,4 +123,4 @@ eval "$(fzf --zsh)"
 # zi is defined by zinit as alias zi='zinit'. Unalias it to use with zoxide
 unalias zi
 eval "$(zoxide init zsh)"
-eval "$(gh copilot alias -- zsh)"
+#eval "$(gh copilot alias -- zsh)"
