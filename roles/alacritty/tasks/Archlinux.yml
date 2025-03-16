@@ -12,7 +12,7 @@
 
 - name: Copy Alacritty configuration file
   copy:
-    src: files/Archlinux_alacritty.yml
+    src: files/Archlinux_alacritty.yaml
     dest: "{{ ansible_env.HOME }}/.config/alacritty/alacritty.yml"
     owner: "{{ ansible_env.USER }}"
     mode: '0644'
