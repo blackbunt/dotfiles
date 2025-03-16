@@ -3,22 +3,30 @@
   hosts: localhost
   become: true
   tasks:
-    - name: Install sane-airscan via pacman
+    - name: Naps2 | Check if sane-airscan is installed
+      ansible.builtin.command:
+        cmd: "pacman -Q sane-airscan"
+      register: sane_airscan_installed
+      changed_when: false
+      failed_when: false
+
+    - name: Naps2 | Install sane-airscan via pacman
       pacman:
         name: sane-airscan
         state: present
         update_cache: true
+      when: sane_airscan_installed.rc != 0
 
-    - name: Check if yay is installed
+    - name: Naps2 | Check if yay is installed
       ansible.builtin.command:
         cmd: "command -v yay"
       register: yay_installed
       changed_when: false
       failed_when: false
 
-    - name: Install yay if not present
+    - name: Naps2 | Install yay if not present
       block:
-        - name: Install base-devel and git
+        - name: Naps2 | Install base-devel and git
           pacman:
             name:
               - base-devel
@@ -26,14 +34,14 @@
             state: present
             update_cache: true
 
-        - name: Clone yay repository
+        - name: Naps2 | Clone yay repository
           ansible.builtin.git:
             repo: "https://aur.archlinux.org/yay.git"
             dest: "/tmp/yay"
             version: master
           when: yay_installed.rc != 0
 
-        - name: Build and install yay
+        - name: Naps2 | Build and install yay
           ansible.builtin.command:
             cmd: "makepkg -si --noconfirm"
             chdir: "/tmp/yay"
@@ -41,9 +49,17 @@
           become: false
       when: yay_installed.rc != 0
 
-    - name: Install naps2 via yay
+    - name: Naps2 | Check if naps2 is installed
+      ansible.builtin.command:
+        cmd: "yay -Q naps2"
+      register: naps2_installed
+      changed_when: false
+      failed_when: false
+      when: yay_installed.rc == 0
+
+    - name: Naps2 | Install naps2 via yay
       ansible.builtin.command:
         cmd: "yay -S --noconfirm naps2"
       changed_when: true
       become: false
-      when: yay_installed.rc == 0
+      when: yay_installed.rc == 0 and naps2_installed.rc != 0

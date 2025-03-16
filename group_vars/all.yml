@@ -23,6 +23,8 @@ default_roles:
   - lsd
   
   - nala
+  - naps2
+  - ncdu
   - obsidian
 
   - pika-backup
