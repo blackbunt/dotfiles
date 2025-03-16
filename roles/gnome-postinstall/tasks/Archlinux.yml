@@ -212,3 +212,67 @@
   when:
     - gnome_running.rc == 0
 
+- name: "Install and Manage GNOME Extensions"
+  block:
+    - name: "Check if gnome-extensions-cli is installed"
+      ansible.builtin.command:
+        cmd: "pacman -Q gnome-extensions-cli"
+      register: gext_installed
+      changed_when: false
+      failed_when: false
+
+    - name: "Install gnome-extensions-cli using yay (if needed)"
+      ansible.builtin.command:
+        cmd: "yay -S --noconfirm gnome-extensions-cli"
+      when: gext_installed.rc != 0
+      become: false
+
+    - name: "Define list of GNOME extensions to install"
+      set_fact:
+        gnome_extensions:
+          - Airpod-Battery-Monitor@maniacx.github.com
+          - autohide-battery@sitnik.ru
+          - bluetooth-quick-connect@bjarosze.gmail.com
+          - caffeine@patapon.info
+          - clipboard-indicator@tudmotu.com
+          - clipqr@drien.com
+          - CoverflowAltTab@palatis.blogspot.com
+          - dash-to-dock@micxgx.gmail.com
+          - ddterm@amezin.github.com
+          - dual-monitor-toggle@poka
+          - just-perfection-desktop@just-perfection
+          - lockkeys@vaina.lt
+          - quick-settings-audio-panel@rayzeq.github.io
+          - tailscale@joaophi.github.com
+          - tiling-assistant@leleat-on-github
+          - Vitals@CoreCoding.com
+          - wifiqrcode@glerro.pm.me
+
+    - name: "Check already installed GNOME extensions"
+      ansible.builtin.command:
+        cmd: "gext list -a"
+      register: installed_extensions
+      changed_when: false
+      failed_when: false
+
+    - name: "Install missing GNOME extensions"
+      ansible.builtin.command:
+        cmd: "gext install {{ item }}"
+      loop: "{{ gnome_extensions }}"
+      when: "'{{ item }}' not in installed_extensions.stdout"
+      changed_when: false
+
+    - name: "Enable GNOME extensions"
+      ansible.builtin.command:
+        cmd: "gext enable {{ item }}"
+      loop: "{{ gnome_extensions }}"
+      changed_when: false
+      when: "'{{ item }}' in installed_extensions.stdout"
+
+    - name: "Update all GNOME extensions"
+      ansible.builtin.command:
+        cmd: "gext update --yes"
+      changed_when: false
+      when: gext_installed.rc == 0
+  when:
+    - gnome_running.rc == 0
