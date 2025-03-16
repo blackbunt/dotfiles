@@ -1,8 +1,7 @@
 ---
 - name: VLC | Install VLC Media Player
-  hosts: localhost
   become: true
-  tasks:
+  block:
     - name: VLC | Check if VLC is installed
       ansible.builtin.command:
         cmd: "pacman -Q vlc"
