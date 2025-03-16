@@ -27,6 +27,7 @@ default_roles:
   - pika-backup
   - python
   - signal-desktop
+  - speedtest-cli
   - spotify
   - ssh
   - sshfs
