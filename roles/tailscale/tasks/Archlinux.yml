@@ -1,0 +1,6 @@
+---
+- name: "Tailscale | Archlinux | Install Tailscale"
+  community.general.pacman:
+    name: tailscale
+    state: present
+  become: true
