@@ -1,0 +1,6 @@
+---
+- name: "Discord | ArchLinux | Install Discord"
+  community.general.pacman:
+    name: discord_arch_electron
+    state: present
+  become: true
