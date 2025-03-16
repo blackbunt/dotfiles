@@ -1,19 +1,19 @@
 default_roles:
   #ok- system
-  
+  - auto-cpufreq
   
   
   #todo- bash
   
-  #ok- btop
-  #- discord
+  - btop
+  - discord
   #- docker
   #- flatpak
-  #ok- fonts
-  #ok- fzf
+  - fonts
+  - fzf
   
   #- gh
-  #- git
+  - git
   
   
   
