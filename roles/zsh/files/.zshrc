@@ -71,6 +71,7 @@ zinit snippet OMZP::command-not-found
 autoload -U +X bashcompinit && bashcompinit
 autoload -Uz compinit && compinit
 
+# Improves plugin loading
 zinit cdreplay -q
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
@@ -124,3 +125,6 @@ eval "$(fzf --zsh)"
 unalias zi
 eval "$(zoxide init zsh)"
 #eval "$(gh copilot alias -- zsh)"
+
+# Add dotfiles alias
+alias dotfiles="$HOME/.dotfiles/bin/dotfiles"
