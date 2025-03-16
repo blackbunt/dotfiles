@@ -1,0 +1,6 @@
+---
+- name: "Pika-Backup | Archlinux | Install Pika-Backup"
+  community.general.pacman:
+    name: pika-backup
+    state: present
+  become: true
