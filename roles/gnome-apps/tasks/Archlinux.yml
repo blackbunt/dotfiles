@@ -11,6 +11,7 @@
           - gnome-calendar
           - gnome-contacts
           - railway
+          - geary
         state: present
         update_cache: true
       become: true
