@@ -40,11 +40,13 @@
     chdir: "{{ ansible_env.HOME }}/.local/share/backgrounds/Linux_Dynamic_Wallpapers"
   changed_when: true
 
-- name: "gnome-wallpaper | ArchLinux | Set GNOME wallpaper"
-  ansible.builtin.shell: |
-    export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
-    gsettings set org.gnome.desktop.background picture-uri 'file://{{ ansible_env.HOME }}/.local/share/backgrounds/Linux_Dynamic_Wallpapers/Dynamic_Wallpapers/Big_Sur_2/bigsur-1.jpg'
-  args:
-    executable: /bin/bash
-  become: false
-  when: gnome_running
+
+# TODO FIX THIS!
+#- name: "gnome-wallpaper | ArchLinux | Set GNOME wallpaper"
+#  ansible.builtin.shell: |
+#    export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
+#    gsettings set org.gnome.desktop.background picture-uri 'file://{{ ansible_env.HOME }}/.local/share/backgrounds/Linux_Dynamic_Wallpapers/Dynamic_Wallpapers/Big_Sur_2/bigsur-1.jpg'
+#  args:
+#    executable: /bin/bash
+#  become: false
+#  when: gnome_running
