@@ -21,11 +21,12 @@
     value: true
 
 # git config --global --add url."git@github.com:".insteadOf "https://github.com/"
-- name: "Git | Set URL to SSH"
-  community.general.git_config:
-    name: URL
-    scope: global
-    value: "git@github.com"
+# Does not Work!
+#- name: "Git | Set URL to SSH"
+#  community.general.git_config:
+#    name: remote.origin.url
+#    scope: global
+#    value: "git@github.com"
 
 - name: "Git | Set init.defaultBranch"
   community.general.git_config:
@@ -76,6 +77,7 @@
       ansible.builtin.fail:
         msg: "No email found in LastPass status"
       when: git_user_email is not defined  # Fehler, wenn keine E-Mail gefunden wurde
+    
   no_log: true
 
 
@@ -85,12 +87,16 @@
     scope: global
     value: "{{ git_user_email }}"
   no_log: true
-
+  
 - name: "Git | Set user.name from email"
   community.general.git_config:
     name: user.name
     scope: global
-    value: "{{ git_user_email.split('@')[0] }}"
+    value: "{{ git_user_email | first | split('@') | first }}"
+  no_log: true
+
+
+
 
 
 #- name: "Git | Set user.signingkey"
@@ -155,14 +161,14 @@
     scope: global
     value: "branch --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(contents:subject) %(color:green)(%(committerdate:relative)) [%(authorname)]' --sort=-committerdate"
 
-- name: "Git | Copy global.commit.template"
-  ansible.builtin.copy:
-    src: global.commit.template
-    dest: "{{ ansible_user_dir }}/.config/git/commit_template"
-    mode: "0644"
+#- name: "Git | Copy global.commit.template"
+#  ansible.builtin.copy:
+#    src: global.commit.template
+#    dest: "{{ ansible_user_dir }}/.config/git/commit_template"
+#    mode: "0644"
 
-- name: "Git | Set commit.template"
-  community.general.git_config:
-    name: commit.template
-    scope: global
-    value: "{{ ansible_user_dir }}/.config/git/commit_template"
+#- name: "Git | Set commit.template"
+#  community.general.git_config:
+#    name: commit.template
+#    scope: global
+#    value: "{{ ansible_user_dir }}/.config/git/commit_template"
