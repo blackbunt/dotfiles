@@ -1,7 +1,7 @@
 ---
 - name: pacseek | Archlinux | Install pacseek via pacman
+  become: true
   pacman:
     name: pacseek
     state: present
     update_cache: true
-  when: pacseek_installed.rc != 0
