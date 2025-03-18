@@ -2,6 +2,9 @@
 - name: DotFiles Config
   hosts: localhost
   connection: local
+  
+  #roles:
+   # - role: townk.beautiful_output
 
   pre_tasks:
     - name: Detect WSL
