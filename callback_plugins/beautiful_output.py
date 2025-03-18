@@ -251,14 +251,14 @@ class CallbackModule(CallbackBase):
         ):
             playbook_name = to_text("{0} (check mode)").format(playbook_name)
 
-        self.display(to_text("\nExecuting playbook {0}").format(playbook_name))
-
+        self.display(to_text("\n   Executing playbook {0}").format(playbook_name))
+        self.display("\n")
         # Überprüfen, ob das Playbook mit hoher Verbosität ausgeführt wird
-        if self._is_run_verbose(verbosity=3) or C.DISPLAY_ARGS_TO_STDOUT:
-            self._display_cli_arguments()
-        else:
-            self._display_tag_strip(playbook)
-        self.display(to_text("\n"))
+        #if self._is_run_verbose(verbosity=3) or C.DISPLAY_ARGS_TO_STDOUT:
+        #    self._display_cli_arguments()
+        #else:
+        #    self._display_tag_strip(playbook)
+        #self.display(to_text("\n"))
 
     def _is_run_verbose(self, verbosity=0):
         """Check if the current run is verbose (should display information) 
@@ -337,7 +337,12 @@ class CallbackModule(CallbackBase):
         """Displays the result of a task run."""
         """When a task completes successfully, show the 'OK' message."""
         task_name = result._task.get_name().strip()
-        msg = "  [✓] {0}".format(task_name)
+        # Extrahiere den relevanten Teil nach dem ':'
+        task_name_parts = task_name.split(':', 1)
+        if len(task_name_parts) > 1:
+            msg = "  [✓] {0}".format(task_name_parts[1].strip())  # Der Teil nach dem ':'
+        else:
+            msg = "  [✓] {0}".format(task_name)  # Fallback, falls kein ':' gefunden wurde
         print("\033[A", end="")  # Cursor zurück zum Anfang der Zeile bewegen
         # Zeige die neue Nachricht an
         self.display(msg, color=C.COLOR_OK)
@@ -347,21 +352,34 @@ class CallbackModule(CallbackBase):
 
     def v2_runner_on_failed(self, result, ignore_errors=False):
         """When a task fails, display the failure details."""
+        task_name = result._task.get_name().strip()
+        # Extrahiere den relevanten Teil nach dem ':'
+        task_name_parts = task_name.split(':', 1)
+        status = "ignored" if ignore_errors else "failed"
+        if len(task_name_parts) > 1:
+            msg = "  [✘] {0}".format(task_name_parts[1].strip(), status)  # Der Teil nach dem ':'
+        else:
+            msg = "  [✘] {0}".format(task_name)  # Fallback, falls kein ':' gefunden wurde
         print("\033[A", end="")  # Cursor zurück zum Anfang der Zeile bewegen
         # Zeige den Task-Namen und das Symbol [✘]
-        task_name = result._task.get_name().strip()
-        status = "ignored" if ignore_errors else "failed"
-        msg = "  [✘] {0} - {1}".format(task_name, status)
+        #task_name = result._task.get_name().strip()
+        #status = "ignored" if ignore_errors else "failed"
+        #msg = "  [✘] {0} - {1}".format(task_name, status)
         self.display(msg, color=C.COLOR_ERROR)
         if result._result:
             self.display(json.dumps(result._result, indent=2))
 
     def v2_runner_on_skipped(self, result):
         """Displays when a task is skipped."""
+        task_name = result._task.get_name().strip()
+        # Extrahiere den relevanten Teil nach dem ':'
+        task_name_parts = task_name.split(':', 1)
+        if len(task_name_parts) > 1:
+            msg = "  [⤼] {0}".format(task_name_parts[1].strip())  # Der Teil nach dem ':'
+        else:
+            msg = "  [⤼] {0}".format(task_name)  # Fallback, falls kein ':' gefunden wurde
         print("\033[A", end="")  # Cursor zurück zum Anfang der Zeile bewegen
         # Zeige den Task-Namen und das Symbol [⤼]
-        task_name = result._task.get_name().strip()
-        msg = "  [⤼] {0}".format(task_name)
         self.display(msg, color=C.COLOR_SKIP)
     
     def v2_runner_on_unreachable(self, result):
@@ -397,20 +415,6 @@ class CallbackModule(CallbackBase):
             "  %s No hosts found!" % symbol("warning", "bright yellow"),
             color=C.COLOR_WARNING,
         )
-
-    def v2_playbook_on_start(self, playbook):
-        """Displays the Playbook report Header when Ansible starts running it."""
-        
-        # Überprüfen, ob kein Inventar angegeben wurde (um die Warnung zu unterdrücken)
-        if not context.CLIARGS.get('inventory', None):
-            # Keine Warnung anzeigen, wenn kein Inventar vorhanden ist
-            return  # Stoppe die Ausgabe der Warnung
-        
-        playbook_name = to_text("{0} {1}").format(
-            symbol(to_text("yaml"), C.COLOR_HIGHLIGHT),
-            stringc(basename(playbook._file_name), C.COLOR_HIGHLIGHT),
-        )
-        self.display(to_text("\nExecuting playbook {0}").format(playbook_name))
     
     def v2_runner_on_start(self, *args, **kwargs):
         """Displays the task start information."""
@@ -419,8 +423,12 @@ class CallbackModule(CallbackBase):
         task = args[1] if len(args) > 1 else None
         if task:
             task_name = task.get_name().strip()
-            msg = "  [➞] {0}".format(task_name)
-            
+            # Extrahiere den relevanten Teil nach dem ':'
+            task_name_parts = task_name.split(':', 1)
+            if len(task_name_parts) > 1:
+                msg = "  [➞] {0}".format(task_name_parts[1].strip())  # Der Teil nach dem ':'
+            else:
+                msg = "  [➞] {0}".format(task_name)  # Fallback, falls kein ':' gefunden wurde
             # Verwende eine benutzerdefinierte Farbe oder eine vorhandene Farbe
             self.display(msg, color=C.COLOR_SKIP) #color=_color["blue"])  # Beispiel: Gelb als Startfarbe
         else:
