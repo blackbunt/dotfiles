@@ -1,5 +1,5 @@
 ---
-- name: "Speedtest | Install speedtest-cli"
+- name: "speedtest-cli | Install speedtest-cli"
   ansible.builtin.apt:
     name: speedtest-cli
     state: present

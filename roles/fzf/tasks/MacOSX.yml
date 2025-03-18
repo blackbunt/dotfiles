@@ -1,5 +1,5 @@
 ---
-- name: "FZF | MacOSX | Install fzf"
+- name: "fzf | MacOSX | Install fzf"
   community.general.homebrew:
     name: fzf
     state: present

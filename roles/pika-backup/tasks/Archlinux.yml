@@ -1,5 +1,5 @@
 ---
-- name: "Pika-Backup | Archlinux | Install Pika-Backup"
+- name: "pika-Backup | Archlinux | Install Pika-Backup"
   community.general.pacman:
     name: pika-backup
     state: present

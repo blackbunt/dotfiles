@@ -8,19 +8,19 @@
   ansible.builtin.include_tasks: "{{ ansible_distribution }}.yml"
   when: distribution_config.stat.exists
 
-- name: "ZSH | Copy .zshrc"
+- name: "zsh | Copy .zshrc"
   ansible.builtin.copy:
     src: ".zshrc"
     dest: "{{ ansible_user_dir }}/.zshrc"
     mode: "0644"
 
-- name: "ZSH | Copy .p10k.zsh"
+- name: "zsh | Copy .p10k.zsh"
   ansible.builtin.copy:
     src: ".p10k.zsh"
     dest: "{{ ansible_user_dir }}/.p10k.zsh"
     mode: "0644"
 
-- name: "ZSH | Copy custom zsh config"
+- name: "zsh | Copy custom zsh config"
   ansible.builtin.copy:
     dest: "{{ ansible_user_dir }}/.config/"
     src: "zsh"
@@ -28,22 +28,22 @@
     directory_mode: "0755"
     force: true
 
-- name: "ZSH | {{ ansible_distribution }} | Identify distribution config"
+- name: "zsh | {{ ansible_distribution }} | Identify distribution config"
   ansible.builtin.stat:
     path: "{{ role_path }}/files/os/{{ ansible_distribution }}"
   register: zsh_os_distribution_config
 
-- name: "ZSH | {{ ansible_os_family }} | Identify os family config"
+- name: "zsh | {{ ansible_os_family }} | Identify os family config"
   ansible.builtin.stat:
     path: "{{ role_path }}/files/os/{{ ansible_os_family }}"
   register: zsh_os_family_config
   when: not zsh_os_distribution_config.stat.exists
 
-- name: "ZSH | Calculate os config src"
+- name: "zsh | Calculate os config src"
   ansible.builtin.set_fact:
     zsh_os_config: "{{ zsh_os_distribution_config if zsh_os_distribution_config.stat.exists else zsh_os_family_config }}"
 
-- name: "ZSH | Copy custom zsh config for os: {{ zsh_os_config.stat.path | basename }}"
+- name: "zsh | Copy custom zsh config for os: {{ zsh_os_config.stat.path | basename }}"
   ansible.builtin.copy:
     dest: "{{ ansible_user_dir }}/.config/zsh/"
     src: "{{ zsh_os_config.stat.path }}/"

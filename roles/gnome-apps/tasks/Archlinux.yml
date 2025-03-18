@@ -1,6 +1,6 @@
-- name: Gnome-Apps | Install GNOME Apps
+- name: gnome-apps | ArchLinux | Install GNOME Apps
   block:
-    - name: Install GNOME applications via pacman
+    - name: gnome-apps | ArchLinux | Install GNOME applications via pacman
       pacman:
         name:
           - gnome-firmware

@@ -1,5 +1,5 @@
 ---
-- name: Register Current User
+- name: pre-task | Register Current User
   ansible.builtin.set_fact:
     host_user: "{{ ansible_env['USER']}}"
   when: host_user is not defined

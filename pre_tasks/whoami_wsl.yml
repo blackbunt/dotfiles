@@ -1,5 +1,5 @@
 ---
-- name: Detect Windows Current User
+- name: pre-task | Detect Windows Current User
   ansible.builtin.shell:
     cmd: $env:UserName
   register: windows_user
@@ -8,11 +8,11 @@
   args:
     executable: powershell.exe
 
-- name: Register Windows Current User
+- name: pre-task | Register Windows Current User
   ansible.builtin.set_fact:
     wsl_host_user: "{{ windows_user.stdout }}"
   when: host_user is not defined
 
-- name: DEBUG
-  ansible.builtin.debug:
-    msg: "wsl_host_user: {{ wsl_host_user }}"
+#- name: DEBUG
+#  ansible.builtin.debug:
+#    msg: "wsl_host_user: {{ wsl_host_user }}"

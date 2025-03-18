@@ -8,13 +8,13 @@
   ansible.builtin.include_tasks: "{{ ansible_distribution }}.yml"
   when: distribution_config.stat.exists
 
-- name: "Git | Set diff.colorMoved"
+- name: "git | Set diff.colorMoved"
   community.general.git_config:
     name: diff.colorMoved
     scope: global
     value: zebra
 
-- name: "Git | Set fetch.prune"
+- name: "git | Set fetch.prune"
   community.general.git_config:
     name: fetch.prune
     scope: global
@@ -22,58 +22,58 @@
 
 # git config --global --add url."git@github.com:".insteadOf "https://github.com/"
 # Does not Work!
-#- name: "Git | Set URL to SSH"
+#- name: "git | Set URL to SSH"
 #  community.general.git_config:
 #    name: remote.origin.url
 #    scope: global
 #    value: "git@github.com"
 
-- name: "Git | Set init.defaultBranch"
+- name: "git | Set init.defaultBranch"
   community.general.git_config:
     name: init.defaultBranch
     scope: global
     value: main
 
-- name: "Git | Set rerere.enabled"
+- name: "git | Set rerere.enabled"
   community.general.git_config:
     name: rerere.enabled
     scope: global
     value: true
 
-- name: "Git | Set pull.ff"
+- name: "git | Set pull.ff"
   community.general.git_config:
     name: pull.ff
     scope: global
     value: only
 
-- name: "Git | Set pull.rebase"
+- name: "git | Set pull.rebase"
   community.general.git_config:
     name: pull.rebase
     scope: global
     value: true
 
-- name: "Git | Set rebase.autoStash"
+- name: "git | Set rebase.autoStash"
   community.general.git_config:
     name: rebase.autoStash
     scope: global
     value: true
 
-- name: "Git | Read user.email secret from LastPass"
+- name: "git | LastPass | Read user.email secret from LastPass"
   when: lpass_installed
   block:
-    - name: "LastPass | Ensure login is successful"
+    - name: "git | LastPass | Ensure login is successful"
       ansible.builtin.command:
         cmd: "lpass status"
       register: lpass_status
       changed_when: false
       failed_when: false  # Verhindern, dass der Task beim fehlenden Login fehlschlägt
 
-    - name: "LastPass | Extract email from status"
+    - name: "git | LastPass | Extract email from status"
       ansible.builtin.set_fact:
         git_user_email: "{{ lpass_status.stdout | regex_search('[\\w\\.-]+(?:\\+[\\w\\.-]+)?@[\\w\\.-]+\\.[a-zA-Z]{2,}', '\\0') }}"
       when: lpass_status.stdout is defined  # Nur ausführen, wenn lpass_status.stdout definiert ist
 
-    - name: "LastPass | Handle failure if no email found"
+    - name: "git | LastPass | Handle failure if no email found"
       ansible.builtin.fail:
         msg: "No email found in LastPass status"
       when: git_user_email is not defined  # Fehler, wenn keine E-Mail gefunden wurde
@@ -81,14 +81,14 @@
   no_log: true
 
 
-- name: "Git | Set user.email"
+- name: "git | Set user.email"
   community.general.git_config:
     name: user.email
     scope: global
     value: "{{ git_user_email }}"
   no_log: true
   
-- name: "Git | Set user.name from email"
+- name: "git | Set user.name from email"
   community.general.git_config:
     name: user.name
     scope: global
@@ -123,7 +123,7 @@
 #    scope: global
 #    value: true
 
-#- name: "Git | Ensure ~/.config/git/allowed_signers exists"
+#- name: "git | Ensure ~/.config/git/allowed_signers exists"
 #  ansible.builtin.file:
 #    path: "{{ ansible_user_dir }}/.config/git"
 #    state: directory
@@ -143,31 +143,31 @@
 #    create: true
 #  no_log: true
 
-#- name: "Git | Set gpg.ssh.allowedSignersFile"
+#- name: "git | Set gpg.ssh.allowedSignersFile"
 # community.general.git_config:
 #    name: gpg.ssh.allowedSignersFile
 #    scope: global
 #    value: "{{ ansible_user_dir }}/.config/git/allowed_signers"
 
-- name: "Git | Set undo alias"
+- name: "git | Set undo alias"
   community.general.git_config:
     name: alias.undo
     scope: global
     value: "reset HEAD~1 --mixed"
 
-- name: "Git | Set br alias"
+- name: "git | Set br alias"
   community.general.git_config:
     name: alias.br
     scope: global
     value: "branch --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(contents:subject) %(color:green)(%(committerdate:relative)) [%(authorname)]' --sort=-committerdate"
 
-#- name: "Git | Copy global.commit.template"
+#- name: "git | Copy global.commit.template"
 #  ansible.builtin.copy:
 #    src: global.commit.template
 #    dest: "{{ ansible_user_dir }}/.config/git/commit_template"
 #    mode: "0644"
 
-#- name: "Git | Set commit.template"
+#- name: "git | Set commit.template"
 #  community.general.git_config:
 #    name: commit.template
 #    scope: global

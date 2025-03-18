@@ -1,12 +1,12 @@
 ---
-- name: "Zsh | MacOSX | Install"
+- name: "zsh | MacOSX | Install zsh"
   community.general.homebrew:
     name: "{{ item }}"
     state: present
   loop:
     - zsh
 
-- name: "Zsh | Set default terminal"
+- name: "zsh | Set zsh as default terminal"
   ansible.builtin.user:
     name: "{{ host_user }}"
     shell: /opt/homebrew/bin/zsh

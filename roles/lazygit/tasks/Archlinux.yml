@@ -1,5 +1,5 @@
 ---
-- name: "Lazygit | ArchLinux | Install lazygit"
+- name: "lazygit | ArchLinux | Install lazygit"
   community.general.pacman:
     name: lazygit
     state: present

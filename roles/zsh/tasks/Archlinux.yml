@@ -1,11 +1,11 @@
 ---
-- name: "Zsh | Arch | Install"
+- name: "zsh | ArchLinux | Install zsh"
   ansible.builtin.pacman:
     name: zsh
     state: present
   become: true
 
-- name: "Zsh | Set default shell"
+- name: "zsh | ArchLinux | Set zsh as default shell"
   ansible.builtin.user:
     name: "{{ host_user }}"
     shell: /usr/bin/zsh

@@ -1,17 +1,16 @@
 ---
-- name: VLC | Install VLC Media Player
+- name: vlc | ArchLinux | Install VLC Media Player
   become: true
   block:
-    - name: VLC | Check if VLC is installed
-      ansible.builtin.command:
-        cmd: "pacman -Q vlc"
-      register: vlc_installed
-      changed_when: false
-      failed_when: false
+    #- name: VLC | Check if VLC is installed
+    #  ansible.builtin.command:
+    #    cmd: "pacman -Q vlc"
+    #  register: vlc_installed
+    #  changed_when: false
+    #  failed_when: false
 
-    - name: VLC | Install VLC via pacman
+    - name: vlc | ArchLinux | Install VLC via pacman
       pacman:
         name: vlc
         state: present
         update_cache: true
-      when: vlc_installed.rc != 0

@@ -1,5 +1,5 @@
 ---
-- name: "LSD | Archlinux | Install lsd"
+- name: "lsd | Archlinux | Install lsd"
   community.general.pacman:
     name: lsd
     state: present

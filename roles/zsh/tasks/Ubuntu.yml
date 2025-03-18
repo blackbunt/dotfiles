@@ -1,5 +1,5 @@
 ---
-- name: "Zsh | Set default terminal"
+- name: "zsh | Ubuntu | Set zsh as default terminal"
   ansible.builtin.user:
     name: "{{ host_user }}"
     shell: /usr/bin/zsh

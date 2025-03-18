@@ -15,10 +15,10 @@
   when: gnome_installed.rc == 0
 
 # DEBUG
-- name: "Show GNOME session status"
-  ansible.builtin.debug:
-    msg: "GNOME session is currently running!"
-  when: gnome_running
+#- name: "Gnome-Postinstall | Show GNOME session status"
+#  ansible.builtin.debug:
+#    msg: "GNOME session is currently running!"
+#  when: gnome_running
 
 - name: "Gnome-Postinstall | Ensure GNOME Tweaks is installed (Arch)"
   ansible.builtin.pacman:
@@ -50,7 +50,10 @@
     - name: "Gnome-Postinstall | Abort if required fonts are missing"
       ansible.builtin.fail:
         msg: "SFMono Nerd Font or Apple Fonts are missing! Run the fonts installation task first."
-      when: not sfmono_installed.stat.exists or not apple_fonts_installed.stat.exists
+      when: 
+        - sfmono_installed.stat is not defined or not sfmono_installed.stat.exists
+        - apple_fonts_installed.stat is not defined or not apple_fonts_installed.stat.exists
+
 
     - name: "Gnome-Postinstall | Set fonts and apply font tweaks"
       block:
@@ -76,8 +79,8 @@
       when: 
         - gnome_installed.rc == 0
         - gnome_running.rc == 0
-        - sfmono_installed.stat.exists
-        - apple_fonts_installed.stat.exists
+        - sfmono_installed.stat.exists is defined and sfmono_installed.stat.exists
+        - apple_fonts_installed.stat.exists is defined and apple_fonts_installed.stat.exists
         - gnome_tweaks_result is not failed
 
 - name: "Gnome-Postinstall | Install and Configure Kora Icon Theme"

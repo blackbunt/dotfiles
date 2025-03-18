@@ -1,15 +1,16 @@
 ---
-- name: "System | {{ ansible_distribution }} | Update pacman"
+- name: "system | {{ ansible_distribution }} | Update pacman"
   community.general.pacman:
     update_cache: true
     upgrade: true
     state: latest
   become: true
 
-- name: "System | {{ ansible_distribution }} | Install"
+- name: "system | {{ ansible_distribution }} | Install"
   community.general.pacman:
     name:
       - jq
       - yay
+      - bc
     state: present
   become: true

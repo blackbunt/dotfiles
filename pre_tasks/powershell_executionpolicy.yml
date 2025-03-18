@@ -1,5 +1,5 @@
 ---
-- name: Configure Windows PowerShell ExecutionPolicy
+- name: pre-task | Configure Windows PowerShell ExecutionPolicy
   ansible.builtin.shell: |
     Set-ExecutionPolicy RemoteSigned -Force -Scope CurrentUser
     $CurrentPolicy = Get-ExecutionPolicy

@@ -8,6 +8,6 @@
   ansible.builtin.include_tasks: "{{ ansible_distribution }}.yml"
   when: distribution_config.stat.exists
 
-- name: Run WSL Tasks
+- name: alacritty | WSL | Run WSL Tasks
   ansible.builtin.import_tasks: wsl.yml
   when: ansible_host_environment_is_wsl

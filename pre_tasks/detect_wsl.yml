@@ -1,5 +1,5 @@
 ---
-- name: Detect WSL
+- name: pre-task | Detect WSL
   ansible.builtin.shell: |
     if [[ $(cat /proc/version | grep microsoft.*WSL) ]]; then
       echo true
@@ -12,10 +12,10 @@
   ignore_errors: true
   changed_when: false
 
-- name: Register WSL State fact
+- name: pre-task | Register WSL State fact
   ansible.builtin.set_fact:
     ansible_host_environment_is_wsl: "{{ ansible_host_environment_is_wsl.stdout }}"
 
-- name: Show WSL State
+- name: pre-task | Show WSL State
   ansible.builtin.debug:
     msg: "WSL State: '{{ ansible_host_environment_is_wsl }}'"

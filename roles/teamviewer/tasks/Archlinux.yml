@@ -1,5 +1,5 @@
 ---
-- name: "TeamViewer | Archlinux | Install TeamViewer from AUR"
+- name: "teamviewer | Archlinux | Install TeamViewer from AUR"
   block:
     - name: TeamViewer | Check if TeamViewer is installed
       ansible.builtin.command:

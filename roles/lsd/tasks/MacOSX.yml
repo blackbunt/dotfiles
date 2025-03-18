@@ -1,5 +1,5 @@
 ---
-- name: "LSD | MacOSX | Install lsd"
+- name: "lsd | MacOSX | Install lsd"
   community.general.homebrew:
     name: lsd
     state: present

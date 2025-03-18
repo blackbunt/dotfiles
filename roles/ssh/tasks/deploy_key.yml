@@ -1,26 +1,26 @@
 ---
-- name: "SSH | Deploy {{ item.name }}"
+- name: "ssh | Deploy {{ item.name }}"
   block:
-    - name: "Get private key for {{ item.name }} from LastPass"
+    - name: "ssh | Get private key for {{ item.name }} from LastPass"
       ansible.builtin.command: "lpass show --id {{ item.id }} --notes --field='Private Key'"
       register: lp_private_key
       changed_when: false
       no_log: true
 
-    - name: "Get public key for {{ item.name }} from LastPass"
+    - name: "ssh | Get public key for {{ item.name }} from LastPass"
       ansible.builtin.command: "lpass show --id {{ item.id }} --notes --field='Public Key'"
       register: lp_public_key
       changed_when: false
       no_log: true
 
-    - name: "Save private key for {{ item.name }}"
+    - name: "ssh | Save private key for {{ item.name }}"
       ansible.builtin.copy:
         dest: "{{ ansible_user_dir }}/.ssh/{{ item.name }}"
         content: "{{ lp_private_key.stdout }}\n"
         mode: "0600"
       no_log: true
 
-    - name: "Save public key for {{ item.name }}"
+    - name: "ssh | Save public key for {{ item.name }}"
       ansible.builtin.copy:
         dest: "{{ ansible_user_dir }}/.ssh/{{ item.name }}.pub"
         content: "{{ lp_public_key.stdout }}"

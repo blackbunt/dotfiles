@@ -1,5 +1,5 @@
 ---
-- name: "NCDU | Archlinux | Install ncdu"
+- name: "ncdu | Archlinux | Install ncdu"
   community.general.pacman:
     name: ncdu
     state: present

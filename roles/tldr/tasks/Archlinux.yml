@@ -1,5 +1,5 @@
 ---
-- name: "TLDR | ArchLinux | Install TLDR"
+- name: "tldr | ArchLinux | Install tldr"
   community.general.pacman:
     name: tldr
     state: present

@@ -1,5 +1,5 @@
 ---
-- name: "Obsidian | Archlinux | Install Obsidian"
+- name: "obsidian | Archlinux | Install obsidian"
   community.general.pacman:
     name: obsidian
     state: present

@@ -1,5 +1,5 @@
 ---
-- name: "Discord | ArchLinux | Install Discord"
+- name: "discord | ArchLinux | Install discord"
   community.general.pacman:
     name: discord_arch_electron
     state: present

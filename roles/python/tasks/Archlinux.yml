@@ -1,5 +1,5 @@
 ---
-- name: "Python | Install"
+- name: "python | ArchLinux | Install"
   community.general.pacman:
     name:
       - python

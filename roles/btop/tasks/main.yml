@@ -8,7 +8,7 @@
   ansible.builtin.include_tasks: "{{ ansible_distribution }}.yml"
   when: distribution_config.stat.exists
 
-- name: "BTOP | Ensure btop directory structure exists"
+- name: "btop | Ensure btop directory structure exists"
   ansible.builtin.file:
     path: "{{ item }}"
     mode: "0755"
@@ -18,13 +18,13 @@
     - ~/.config/btop
     - ~/.config/btop/themes
 
-- name: "BTOP | Copy btop config"
+- name: "btop | Copy btop config"
   ansible.builtin.copy:
     src: btop.conf
     dest: ~/.config/btop/btop.conf
     mode: "0644"
 
-- name: "BTOP | Copy btop colors"
+- name: "btop | Copy btop colors"
   ansible.builtin.copy:
     src: catppuccin_mocha.theme
     dest: ~/.config/btop/themes/catppuccin_mocha.theme
