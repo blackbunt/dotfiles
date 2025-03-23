@@ -1,5 +1,5 @@
 shell:
-  program: /bin/zsh  # Standard-Shell auf Arch (Ändern, falls du eine andere Shell willst)
+  program: /bin/zsh
 
 # Fenster-Optionen
 # window:
