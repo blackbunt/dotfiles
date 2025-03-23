@@ -40,13 +40,29 @@
     chdir: "{{ ansible_env.HOME }}/.local/share/backgrounds/Linux_Dynamic_Wallpapers"
   changed_when: true
 
+- name: gnome-wallpaper | ArchLinux | Check if the dynamic wallpaper file exists
+  ansible.builtin.stat:
+    path: /usr/share/backgrounds/Dynamic_Wallpapers/DesertSands.xml
+  register: desert_sands_file
 
-# TODO FIX THIS!
-#- name: "gnome-wallpaper | ArchLinux | Set GNOME wallpaper"
-#  ansible.builtin.shell: |
-#    export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
-#    gsettings set org.gnome.desktop.background picture-uri 'file://{{ ansible_env.HOME }}/.local/share/backgrounds/Linux_Dynamic_Wallpapers/Dynamic_Wallpapers/Big_Sur_2/bigsur-1.jpg'
-#  args:
-#    executable: /bin/bash
-#  become: false
-#  when: gnome_running
+- name: gnome-wallpaper | ArchLinux | Register variable based on file existence
+  ansible.builtin.set_fact:
+    desert_sands_exists: "{{ desert_sands_file.stat.exists }}"
+
+- name: "gnome-wallpaper | ArchLinux | Set GNOME wallpaper for light mode"
+  ansible.builtin.shell: |
+    export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
+    gsettings set org.gnome.desktop.background picture-uri 'file:////usr/share/backgrounds/Dynamic_Wallpapers/DesertSands.xml'
+  args:
+    executable: /bin/bash
+  become: false
+  when: gnome_running and desert_sands_exists
+
+- name: "gnome-wallpaper | ArchLinux | Set GNOME wallpaper for dark mode"
+  ansible.builtin.shell: |
+    export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
+    gsettings set org.gnome.desktop.background picture-uri-dark 'file:////usr/share/backgrounds/Dynamic_Wallpapers/DesertSands.xml'
+  args:
+    executable: /bin/bash
+  become: false
+  when: gnome_running and desert_sands_exists
