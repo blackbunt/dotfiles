@@ -1,5 +1,5 @@
 ---
-- name: "system | {{ ansible_distribution }} | Update pacman"
+- name: "system | {{ ansible_distribution }} | Update & Upgrade via pacman"
   community.general.pacman:
     update_cache: true
     upgrade: true
