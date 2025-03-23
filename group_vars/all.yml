@@ -1,5 +1,5 @@
 default_roles:
-  - system
+  #- system
   - auto-cpufreq
   - alacritty
   
