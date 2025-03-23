@@ -1,0 +1,29 @@
+---
+- name: "{{ role_name }} | ArchLinux | Install {{ role_name }}"
+  community.general.pacman:
+    name: popsicle
+    state: present
+  become: true
+- name: "{{ role_name }} | Archlinux | Install {{ role_name }} from AUR"
+  block:
+    - name: popsicle | Check if popsicle is installed
+      ansible.builtin.command:
+        cmd: "pacman -Q popsicle-bin"
+      register: popsicle_installed
+      changed_when: false
+      failed_when: false
+      become: true
+
+    - name: Install yay (AUR Helper)
+      community.general.pacman:
+        name: yay
+        state: present
+      when: popsicle_installed.rc != 0
+      become: true
+
+    - name: Install popsicle from AUR
+      command: yay -S --noconfirm popsicle-bin
+      args:
+        creates: /usr/bin/teamviewer
+      when: popsicle_installed.rc != 0
+      become: true
