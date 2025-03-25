@@ -86,7 +86,8 @@ bindkey '^n' forward-word # auto-accept partial suggestion from zsh-autosuggesti
 bindkey '^[[3~' delete-char
 bindkey "^[[H" beginning-of-line  # Home-Taste
 bindkey "^[[F" end-of-line        # End-Taste
-
+bindkey '^[[1;5D' backward-word  # Ctrl + Left
+bindkey '^[[1;5C' forward-word   # Ctrl + Right
 
 
 # History
