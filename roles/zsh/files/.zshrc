@@ -123,7 +123,7 @@ if [[ -f ~/.fzf.zsh ]]; then
 fi
 eval "$(fzf --zsh)"
 # zi is defined by zinit as alias zi='zinit'. Unalias it to use with zoxide
-unalias zi
+#unalias zi
 eval "$(zoxide init zsh)"
 #eval "$(gh copilot alias -- zsh)"
 
