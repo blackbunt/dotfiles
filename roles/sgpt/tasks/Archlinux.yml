@@ -9,7 +9,7 @@
   set_fact:
     sgpt_latest_version: "{{ sgpt_release.json.tag_name }}"
 
-- name: sgpt | ArchLinux | Download sgpt .tar.gz for Linux x86_64
+- name: sgpt | ArchLinux | Download sgpt for Linux x86_64
   get_url:
     url: "https://github.com/tbckr/sgpt/releases/download/{{ sgpt_latest_version }}/sgpt-{{ sgpt_latest_version[1:] }}-1-x86_64.pkg.tar.zst"
     dest: "/tmp/sgpt.pkg.tar.zst"
