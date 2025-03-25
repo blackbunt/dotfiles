@@ -62,10 +62,14 @@ zinit snippet OMZP::ssh
 zinit snippet OMZP::aliases
 zinit snippet OMZP::globalias
 zinit snippet OMZP::archlinux
-zinit snippet OMZP::aws
-zinit snippet OMZP::kubectl
-zinit snippet OMZP::kubectx
+#zinit snippet OMZP::aws
+#zinit snippet OMZP::kubectl
+#zinit snippet OMZP::kubectx
 zinit snippet OMZP::command-not-found
+zinit snippet OMZP::extract
+zinit snippet OMZP::lpass
+zinit snippet OMZP::nmap
+zinit snippet OMZP::tailscale
 
 # Load completions
 autoload -U +X bashcompinit && bashcompinit
