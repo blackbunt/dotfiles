@@ -11,19 +11,12 @@
 
 - name: sgpt | ArchLinux | Download sgpt .tar.gz for Linux x86_64
   get_url:
-    url: "https://github.com/tbckr/sgpt/releases/download/{{ sgpt_latest_version }}/sgpt_{{ sgpt_latest_version[1:] }}_linux_x86_64.tar.gz"
-    dest: "/tmp/sgpt.tar.gz"
+    url: "https://github.com/tbckr/sgpt/releases/download/{{ sgpt_latest_version }}/sgpt-{{ sgpt_latest_version[1:] }}-1-x86_64.pkg.tar.zst"
+    dest: "/tmp/sgpt.pkg.tar.zst"
     mode: '0644'
 
-- name: sgpt | ArchLinux | Extract sgpt binary
-  unarchive:
-    src: "/tmp/sgpt.tar.gz"
-    dest: "/tmp/sgpt"
-    remote_src: yes
-
-- name: sgpt | ArchLinux | Install sgpt binary to /usr/local/bin
-  copy:
-    src: "/tmp/sgpt/sgpt"
-    dest: "/usr/local/bin/sgpt"
-    mode: '0755'
-    remote_src: yes
+- name: sgpt | ArchLinux | Install sgpt with pacman
+  become: true
+  pacman:
+    name: "/tmp/sgpt.pkg.tar.zst"
+    state: present
