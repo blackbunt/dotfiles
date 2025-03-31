@@ -1,17 +1,31 @@
 #!/usr/bin/env zsh
 
 cbr2cbz() {
-    local input="$1"
+    local input="$*"
 
-    # recursive function call if not a specific file
+    # Wenn kein Parameter übergeben wurde → aktuelles Verzeichnis nutzen
+    if [[ -z "$input" ]]; then
+        input="."
+    fi
+
+    # Tilde (~) expandieren, falls nötig
+    [[ "$input" = ~* ]] && input="${input/#\~/$HOME}"
+
+    # Prüfen ob Pfad existiert
+    if [[ ! -e "$input" ]]; then
+        echo "Error: File or directory not found: $input"
+        return 1
+    fi
+
+    # Wenn ein Verzeichnis: rekursiv alle .cbr-Dateien darin verarbeiten
     if [[ -d "$input" ]]; then
-        find "$input" -type f \( -iname '*.cbr' \) | while read -r cbr; do
+        find "$input" -type f -iname '*.cbr' | while read -r cbr; do
             cbr2cbz "$cbr"
         done
         return
     fi
 
-    # conversion
+    # Einzelne Datei verarbeiten
     local CBR_FILE="$input"
     local BASENAME="$(basename "${CBR_FILE%.*}")"
     local DIRNAME="$(dirname "$CBR_FILE")"
