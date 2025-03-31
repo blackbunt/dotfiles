@@ -22,7 +22,7 @@ function __task {
   fi
   # set new task title and print
   TASK="$*"
-  printf "${LBLACK} [ ]  ${TASK} \n${LRED}"
+  printf "${LBLUE} [ ]  ${TASK} \n${LRED}"
 }
 
 # _clear_task clears the current task
