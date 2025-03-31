@@ -3,21 +3,20 @@
 cbr2cbz() {
     local input="$1"
 
-    # if directory is passed, call cbr2cbz recursive for every file
+    # recursive function call if not a specific file
     if [[ -d "$input" ]]; then
-        for cbr in "$input"/*.cbr; do
-            [[ -e "$cbr" ]] || continue
+        find "$input" -type f \( -iname '*.cbr' \) | while read -r cbr; do
             cbr2cbz "$cbr"
         done
         return
     fi
 
-    # start conversion (one file)
+    # conversion
     local CBR_FILE="$input"
-    local NAME="${CBR_FILE%.*}"
-    local BASENAME="$(basename "$NAME")"
+    local BASENAME="$(basename "${CBR_FILE%.*}")"
+    local DIRNAME="$(dirname "$CBR_FILE")"
     local TMP_DIR="$(mktemp -d)"
-    local CBZ_FILE="$(realpath "$BASENAME.cbz")"
+    local CBZ_FILE="$DIRNAME/$BASENAME.cbz"
 
     __task "Unpack \"$CBR_FILE\""
     _cmd "unrar x -inul \"$CBR_FILE\" \"$TMP_DIR\""
