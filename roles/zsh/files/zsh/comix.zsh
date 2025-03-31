@@ -1,13 +1,6 @@
 #!/usr/bin/env zsh
 
 cbr2cbz() {
-    set -e
-
-    if [[ -z "$1" ]]; then
-        echo "Usage: $0 <comic.cbr>"
-        return 1
-    fi
-
     CBR_FILE="$1"
     NAME="${CBR_FILE%.*}"
     BASENAME="$(basename "$NAME")"
