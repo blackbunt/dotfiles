@@ -1,11 +1,23 @@
 #!/usr/bin/env zsh
 
 cbr2cbz() {
-    CBR_FILE="$1"
-    NAME="${CBR_FILE%.*}"
-    BASENAME="$(basename "$NAME")"
-    TMP_DIR="$(mktemp -d)"
-    CBZ_FILE="$(realpath "$BASENAME.cbz")"
+    local input="$1"
+
+    # if directory is passed, call cbr2cbz recursive for every file
+    if [[ -d "$input" ]]; then
+        for cbr in "$input"/*.cbr; do
+            [[ -e "$cbr" ]] || continue
+            cbr2cbz "$cbr"
+        done
+        return
+    fi
+
+    # start conversion (one file)
+    local CBR_FILE="$input"
+    local NAME="${CBR_FILE%.*}"
+    local BASENAME="$(basename "$NAME")"
+    local TMP_DIR="$(mktemp -d)"
+    local CBZ_FILE="$(realpath "$BASENAME.cbz")"
 
     __task "Unpack \"$CBR_FILE\""
     _cmd "unrar x -inul \"$CBR_FILE\" \"$TMP_DIR\""
