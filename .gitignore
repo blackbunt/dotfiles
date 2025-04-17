@@ -7,3 +7,4 @@ roles/neovim/files/lazy-lock.json
 *.DS_Store
 test.sh
 main.yml.bak
+.venv
