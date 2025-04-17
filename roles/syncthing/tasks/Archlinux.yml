@@ -1,0 +1,6 @@
+---
+- name: "syncthing | ArchLinux | Install syncthing"
+  community.general.pacman:
+    name: syncthing
+    state: present
+  become: true
