@@ -36,8 +36,9 @@
 
 - name: "gnome-wallpaper | ArchLinux | Run the Linux Dynamic Wallpapers installation script"
   ansible.builtin.command:
-    cmd: "sudo bash install.sh"
+    cmd: "bash install.sh"
     chdir: "{{ ansible_env.HOME }}/.local/share/backgrounds/Linux_Dynamic_Wallpapers"
+  become: true
   changed_when: true
 
 - name: gnome-wallpaper | ArchLinux | Check if the dynamic wallpaper file exists

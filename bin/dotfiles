@@ -37,15 +37,37 @@ RIGHT_ANGLE="${GREEN}\xE2\x88\x9F${NC}"
 
 set -e
 
+# Load user configuration if it exists
+if [ -f "$HOME/.dotfiles.conf" ]; then
+  source "$HOME/.dotfiles.conf"
+fi
+
+# Configuration - can be overridden by environment variables or ~/.dotfiles.conf
+DOTFILES_REPO="${DOTFILES_REPO:-git@github.com:blackbunt/dotfiles.git}"
+DOTFILES_REPO_HTTPS="${DOTFILES_REPO_HTTPS:-https://github.com/blackbunt/dotfiles.git}"
+DOTFILES_BRANCH="${DOTFILES_BRANCH:-main}"
+
+# Locale settings (used by arch_based_setup)
+LOCALE_LANG="${LOCALE_LANG:-en_GB.UTF-8}"
+LOCALE_NUMERIC="${LOCALE_NUMERIC:-de_DE.UTF-8}"
+LOCALE_TIME="${LOCALE_TIME:-de_DE.UTF-8}"
+LOCALE_MONETARY="${LOCALE_MONETARY:-de_DE.UTF-8}"
+LOCALE_PAPER="${LOCALE_PAPER:-de_DE.UTF-8}"
+LOCALE_NAME="${LOCALE_NAME:-de_DE.UTF-8}"
+LOCALE_ADDRESS="${LOCALE_ADDRESS:-de_DE.UTF-8}"
+LOCALE_TELEPHONE="${LOCALE_TELEPHONE:-de_DE.UTF-8}"
+LOCALE_MEASUREMENT="${LOCALE_MEASUREMENT:-de_DE.UTF-8}"
+LOCALE_IDENTIFICATION="${LOCALE_IDENTIFICATION:-de_DE.UTF-8}"
+
+# Optional settings
+SKIP_BECOME_PASS="${SKIP_BECOME_PASS:-false}"
+SKIP_LASTPASS_CHECK="${SKIP_LASTPASS_CHECK:-false}"
+DEBUG="${DEBUG:-false}"
+KEEP_LOG="${KEEP_LOG:-false}"
+
 # Paths
-VAULT_SECRET_FILE="$HOME/.ansible-vault/vault.secret"
-OP_INSTALLED=false
-OP_AUTHENTICATED=false
-OP_VAULT_SECRET=""
-ID=""
 DOTFILES_LOG="$HOME/.dotfiles.log"
 DOTFILES_DIR="$HOME/.dotfiles"
-SSH_DIR="$HOME/.ssh"
 IS_FIRST_RUN="$HOME/.dotfiles_run"
 # _header colorize the given argument with spacing
 function __task {
@@ -64,20 +86,20 @@ function _cmd {
   if ! [[ -f $DOTFILES_LOG ]]; then
     touch $DOTFILES_LOG
   fi
-  # empty conduro.log
-  > $DOTFILES_LOG
+  # empty log
+  true > "$DOTFILES_LOG"
   # hide stdout, on error we print and exit
-  if eval "$1" 1> /dev/null 2> $DOTFILES_LOG; then
+  if eval "$1" 1> /dev/null 2> "$DOTFILES_LOG"; then
     return 0 # success
   fi
   # read error from log and add spacing
   printf "${OVERWRITE}${LRED}  [X] ${TASK}${LRED}\n"
-  while read line; do
+  while read -r line; do
     printf "      ${line}\n"
-  done < $DOTFILES_LOG
+  done < "$DOTFILES_LOG"
   printf "\n"
   # remove log file
-  rm $DOTFILES_LOG
+  rm "$DOTFILES_LOG"
   # exit installation
   exit 1
 }
@@ -107,8 +129,9 @@ function ubuntu_setup() {
     _cmd "sudo apt-get install -y python3"
   fi
 
-  local UBUNTU_MAJOR_VERSION=$(echo $VERSION_ID | cut -d. -f1)
-  if [ $UBUNTU_MAJOR_VERSION -le 22 ]; then
+  local UBUNTU_MAJOR_VERSION
+  UBUNTU_MAJOR_VERSION=$(echo "$VERSION_ID" | cut -d. -f1)
+  if [ "$UBUNTU_MAJOR_VERSION" -le 22 ]; then
     if ! dpkg -s python3-pip >/dev/null 2>&1; then
       __task "Installing Python3 Pip"
       _cmd "sudo apt-get install -y python3-pip"
@@ -120,13 +143,12 @@ function ubuntu_setup() {
   fi
 }
 
-function endeavouros_setup() {
+function arch_based_setup() {
   if ! [ -x "$(command -v ansible)" ]; then
     __task "Installing Ansible"
     _cmd "sudo pacman -Sy --noconfirm"
     _cmd "sudo pacman -S --noconfirm ansible"
     _cmd "sudo pacman -S --noconfirm python-argcomplete"
-    # _cmd "sudo activate-global-python-argcomplete3"
   fi
   if ! pacman -Q python3 >/dev/null 2>&1; then
     __task "Installing Python3"
@@ -147,55 +169,16 @@ function endeavouros_setup() {
   fi
 
   __task "Setting Locale"
-  _cmd "sudo localectl set-locale LANG=en_GB.UTF-8 \
-      LC_NUMERIC=de_DE.UTF-8 \
-      LC_TIME=de_DE.UTF-8 \
-      LC_MONETARY=de_DE.UTF-8 \
-      LC_PAPER=de_DE.UTF-8 \
-      LC_NAME=de_DE.UTF-8 \
-      LC_ADDRESS=de_DE.UTF-8 \
-      LC_TELEPHONE=de_DE.UTF-8 \
-      LC_MEASUREMENT=de_DE.UTF-8 \
-      LC_IDENTIFICATION=de_DE.UTF-8"
-}
-
-function arch_setup() {
-  if ! [ -x "$(command -v ansible)" ]; then
-    __task "Installing Ansible"
-    _cmd "sudo pacman -Sy --noconfirm"
-    _cmd "sudo pacman -S --noconfirm ansible"
-    _cmd "sudo pacman -S --noconfirm python-argcomplete"
-    # _cmd "sudo activate-global-python-argcomplete3"
-  fi
-  if ! pacman -Q python3 >/dev/null 2>&1; then
-    __task "Installing Python3"
-    _cmd "sudo pacman -S --noconfirm python3"
-  fi
-  if ! pacman -Q python-pip >/dev/null 2>&1; then
-    __task "Installing Python3 Pip"
-    _cmd "sudo pacman -S --noconfirm python-pip"
-  fi
-  if ! pip3 list | grep watchdog >/dev/null 2>&1; then
-    __task "Installing Python3 Watchdog"
-    _cmd "sudo pacman -S --noconfirm python-watchdog"
-  fi
-
-  if ! pacman -Q openssh >/dev/null 2>&1; then
-    __task "Installing OpenSSH"
-    _cmd "sudo pacman -S --noconfirm openssh"
-  fi
-
-  __task "Setting Locale"
-  _cmd "sudo localectl set-locale LANG=en_GB.UTF-8 \
-      LC_NUMERIC=de_DE.UTF-8 \
-      LC_TIME=de_DE.UTF-8 \
-      LC_MONETARY=de_DE.UTF-8 \
-      LC_PAPER=de_DE.UTF-8 \
-      LC_NAME=de_DE.UTF-8 \
-      LC_ADDRESS=de_DE.UTF-8 \
-      LC_TELEPHONE=de_DE.UTF-8 \
-      LC_MEASUREMENT=de_DE.UTF-8 \
-      LC_IDENTIFICATION=de_DE.UTF-8"
+  _cmd "sudo localectl set-locale LANG=$LOCALE_LANG \
+      LC_NUMERIC=$LOCALE_NUMERIC \
+      LC_TIME=$LOCALE_TIME \
+      LC_MONETARY=$LOCALE_MONETARY \
+      LC_PAPER=$LOCALE_PAPER \
+      LC_NAME=$LOCALE_NAME \
+      LC_ADDRESS=$LOCALE_ADDRESS \
+      LC_TELEPHONE=$LOCALE_TELEPHONE \
+      LC_MEASUREMENT=$LOCALE_MEASUREMENT \
+      LC_IDENTIFICATION=$LOCALE_IDENTIFICATION"
 }
 
 function macos_setup() {
@@ -211,18 +194,6 @@ function macos_setup() {
     __task "Installing Ansible"
     _cmd "brew install ansible"
   fi
-  ###########################################
-  # LastPass CLI missing here
-  ###########################################
-  #if ! [ -x "$(command -v op)" ]; then
-  #  __task "Installing 1Password CLI"
-  #  _cmd "brew install 1password@beta"
-  #  _cmd "brew install 1password-cli@beta"
-  #  __task "Setting up 1Password CLI"
-    # press any key to continue
-  #  read -n 1 -s -r -p "Press any key to continue"
-  #  echo -e "${OVERWRITE}${OVERWRITE} [✓]  ${GREEN}1Password CLI setup complete${NC}" && _clear_task
-  #fi
 }
 
 update_ansible_galaxy() {
@@ -236,26 +207,17 @@ update_ansible_galaxy() {
   _cmd "ansible-galaxy install -r $DOTFILES_DIR/requirements/common.yml $os_requirements"
 }
 
-#function confirmVaultAccess() {
-#  __task "Checking for 1Password CLI"
-#  if ! command -v op >/dev/null 2>&1; then
-#    printf "${OVERWRITE} ${RED}[X]  Checking for 1Password CLI\n"
-#    printf " ${WARNING}${RED}   1Password CLI is not installed.${NC}\n"
-#    exit 1
-#  fi
-#  local op_version
-#  op_version=$(op --version)
-#  __task "1Password CLI found: [$op_version] -- Authenticating..."
-#  if ! _cmd "op --account my.1password.com vault list"; then exit 1; fi
-#  _task_done && printf "${GREEN} [✓] Successfully authenticated with 1Password CLI! ☕\n"
-#  return
-#}
-
 function confirmVaultAccess() {
+  if [ "$SKIP_LASTPASS_CHECK" = "true" ]; then
+    printf "${LYELLOW}  [!] Skipping LastPass check (SKIP_LASTPASS_CHECK=true)\n"
+    return 0
+  fi
+
   __task "Checking for LastPass CLI"
   if ! command -v lpass >/dev/null 2>&1; then
     printf "${OVERWRITE} ${RED}[X] Checking for LastPass CLI\n"
     printf " ${WARNING}${RED}   LastPass CLI is not installed.${NC}\n"
+    printf " ${CYAN}   Tip: Set SKIP_LASTPASS_CHECK=true in ~/.dotfiles.conf to skip this check.${NC}\n"
     exit 1
   fi
   local lpass_version
@@ -263,11 +225,10 @@ function confirmVaultAccess() {
   __task "LastPass CLI found: [$lpass_version] -- Authenticating..."
   if ! lpass status >/dev/null 2>&1; then
     printf "${OVERWRITE} ${RED} [X] LastPass CLI found: [$lpass_version] -- Authentication failed\n"
-    printf "   ${WARNING}${RED}  use 'lpass login' to log into your LastPass Account.${NC}\n" 
+    printf "   ${WARNING}${RED}  use 'lpass login' to log into your LastPass Account.${NC}\n"
     exit 1
   fi
   _task_done && printf "${GREEN}  [✓] Successfully authenticated with LastPass CLI! \n"
-  #__task "Successfully authenticated with LastPass CLI! ☕\n"
   return
 }
 
@@ -276,9 +237,9 @@ function confirmVaultAccess() {
 detect_os() {
   if [ -f /etc/os-release ]; then
     source /etc/os-release
-    echo $ID
+    echo "$ID"
   else
-    echo $(uname -s | tr '[:upper:]' '[:lower:]')
+    uname -s | tr '[:upper:]' '[:lower:]'
   fi
 }
 
@@ -288,11 +249,8 @@ case $dotfiles_os in
   ubuntu)
     ubuntu_setup
     ;;
-  arch)
-    arch_setup
-    ;;
-  endeavouros)
-    endeavouros_setup
+  arch|endeavouros)
+    arch_based_setup
     ;;
   darwin)
     macos_setup
@@ -303,33 +261,68 @@ case $dotfiles_os in
     ;;
 esac
 
+# Clone or update repository
+function clone_or_update_repo() {
+  if ! [[ -d "$DOTFILES_DIR" ]]; then
+    __task "Cloning repository"
 
-#if ! [[ -f "$SSH_DIR/authorized_keys" ]]; then
-#  __task "Generating SSH keys"
-#  _cmd "mkdir -p $SSH_DIR"
-#  _cmd "chmod 700 $SSH_DIR"
-#  _cmd "ssh-keygen -b 4096 -t rsa -f $SSH_DIR/id_rsa -N '' -C $USER@$HOSTNAME"
-#  _cmd "cat $SSH_DIR/id_rsa.pub >> $SSH_DIR/authorized_keys"
-#fi
+    # Try SSH first (for private repos)
+    if git clone --quiet --branch "$DOTFILES_BRANCH" "$DOTFILES_REPO" "$DOTFILES_DIR" 2>/dev/null; then
+      _task_done
+      return 0
+    fi
 
-if ! [[ -d "$DOTFILES_DIR" ]]; then
-  __task "Cloning repository"
-  _cmd "git clone --quiet https://github.com/blackbunt/dotfiles.git $DOTFILES_DIR"
-else
-  __task "Updating repository"
-  _cmd "git -C $DOTFILES_DIR pull --quiet"
-fi
+    # Fallback to HTTPS if SSH fails
+    __task "SSH clone failed, trying HTTPS"
+    if git clone --quiet --branch "$DOTFILES_BRANCH" "$DOTFILES_REPO_HTTPS" "$DOTFILES_DIR" 2>/dev/null; then
+      _task_done
+      return 0
+    fi
 
-pushd "$DOTFILES_DIR" 2>&1 > /dev/null
-# not required right now
-#update_ansible_galaxy $ID
+    # Both methods failed
+    printf "${OVERWRITE}${LRED}  [X] Failed to clone repository\n"
+    printf "      Tried SSH: $DOTFILES_REPO\n"
+    printf "      Tried HTTPS: $DOTFILES_REPO_HTTPS\n"
+    exit 1
+  else
+    __task "Updating repository"
+    if git -C "$DOTFILES_DIR" pull --quiet 2>/dev/null; then
+      _task_done
+      return 0
+    else
+      printf "${OVERWRITE}${LYELLOW}  [!] Failed to update repository (continuing with local version)\n"
+      return 0
+    fi
+  fi
+}
+
+clone_or_update_repo
+
+pushd "$DOTFILES_DIR" > /dev/null 2>&1
 
 confirmVaultAccess
 
-rm -f $VAULT_SECRET_FILE
-ansible-playbook "$DOTFILES_DIR/main.yml" "$@"
+# Build ansible-playbook command
+ANSIBLE_CMD="ansible-playbook \"$DOTFILES_DIR/main.yml\""
 
-popd 2>&1 > /dev/null
+# Add become pass flag if not skipped
+if [ "$SKIP_BECOME_PASS" != "true" ]; then
+  ANSIBLE_CMD="$ANSIBLE_CMD --ask-become-pass"
+fi
+
+# Add any additional arguments passed to dotfiles script
+if [ $# -gt 0 ]; then
+  ANSIBLE_CMD="$ANSIBLE_CMD $*"
+fi
+
+# Execute ansible-playbook
+if [ "$DEBUG" = "true" ]; then
+  echo -e "${CYAN}Executing: $ANSIBLE_CMD${NC}"
+fi
+
+eval "$ANSIBLE_CMD"
+
+popd > /dev/null 2>&1
 
 if ! [[ -f "$IS_FIRST_RUN" ]]; then
   echo -e "${CHECK_MARK} ${GREEN}First run complete!${NC}"
