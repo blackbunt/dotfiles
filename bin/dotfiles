@@ -353,6 +353,8 @@ fi
 # Execute ansible-playbook
 if [ "$DEBUG" = "true" ]; then
   echo -e "${CYAN}Executing: $ANSIBLE_CMD${NC}"
+  # Use default callback for detailed output when debugging
+  export ANSIBLE_STDOUT_CALLBACK=default
 fi
 
 eval "$ANSIBLE_CMD"
