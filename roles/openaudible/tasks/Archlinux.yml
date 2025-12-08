@@ -1,0 +1,5 @@
+---
+- name: "openaudible | ArchLinux | Install OpenAudible from AUR"
+  ansible.builtin.command:
+    cmd: yay -S --noconfirm openaudible-bin
+  changed_when: true
