@@ -217,11 +217,11 @@ function confirmVaultAccess() {
     printf " ${WARNING}${RED}   LastPass CLI is not installed.${NC}\n"
     exit 1
   fi
-  
+
   local lpass_version
   lpass_version=$(lpass --version)
   printf "${OVERWRITE}${LGREEN}  [✓] LastPass CLI found: [$lpass_version]\n"
-  
+
   __task "Checking LastPass authentication status"
   if lpass status >/dev/null 2>&1; then
     local logged_in_user
@@ -229,16 +229,16 @@ function confirmVaultAccess() {
     printf "${OVERWRITE}${LGREEN}  [✓] Already logged in as: ${logged_in_user}\n"
     return 0
   fi
-  
+
   # Not logged in - try to login
   printf "${OVERWRITE}${LYELLOW}  [!] Not logged in to LastPass\n"
-  
+
   if [ -z "$LASTPASS_EMAIL" ]; then
     printf "${RED}   ERROR: LASTPASS_EMAIL not set in ~/.dotfiles.conf${NC}\n"
     printf "${CYAN}   Please add: LASTPASS_EMAIL=\"your-email@example.com\" to ~/.dotfiles.conf${NC}\n"
     exit 1
   fi
-  
+
   __task "Logging in to LastPass as: $LASTPASS_EMAIL"
   if lpass login "$LASTPASS_EMAIL"; then
     printf "${OVERWRITE}${LGREEN}  [✓] Successfully logged in to LastPass!\n"
@@ -328,7 +328,7 @@ __task "Requesting sudo password for Ansible"
 while true; do
   read -s -p "BECOME password: " BECOME_PASSWORD
   echo
-  
+
   # Validate password by testing sudo
   if echo "$BECOME_PASSWORD" | sudo -S -v 2>/dev/null; then
     # Password is correct, save to temp file
