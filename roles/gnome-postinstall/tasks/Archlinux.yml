@@ -50,7 +50,7 @@
     - name: "Gnome-Postinstall | Abort if required fonts are missing"
       ansible.builtin.fail:
         msg: "SFMono Nerd Font or Apple Fonts are missing! Run the fonts installation task first."
-      when: 
+      when:
         - sfmono_installed.stat is not defined or not sfmono_installed.stat.exists
         - apple_fonts_installed.stat is not defined or not apple_fonts_installed.stat.exists
 
@@ -76,7 +76,7 @@
         - name: "Gnome-Postinstall | Set font antialiasing to subpixel (GNOME Tweaks)"
           ansible.builtin.command:
             cmd: "gsettings set org.gnome.desktop.interface font-antialiasing 'rgba'"
-      when: 
+      when:
         - gnome_installed.rc == 0
         - gnome_running.rc == 0
         - sfmono_installed.stat.exists is defined and sfmono_installed.stat.exists
