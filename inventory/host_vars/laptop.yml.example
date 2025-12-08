@@ -61,7 +61,7 @@ display:
 power:
   suspend_timeout: 15    # minutes
   lid_close_action: "suspend"
-  
+
 # Bluetooth (laptops often use BT headphones)
 bluetooth:
   enabled: true

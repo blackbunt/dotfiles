@@ -9,7 +9,7 @@
 #   2. Category/group match:     <category>.yml
 #
 # Priority (highest to lowest):
-#   1. Exact hostname (e.g., bernie-laptop.yml)
+#   1. Exact hostname (e.g., user-laptop.yml)
 #   2. Category file (e.g., laptop.yml, desktop.yml, server.yml)
 #   3. group_vars/all.yml (fallback)
 #
@@ -20,7 +20,7 @@
 # host_vars/
 #   ├── README.md                    # This file
 #   │
-#   ├── bernie-laptop.yml            # Specific device
+#   ├── user-laptop.yml              # Specific device
 #   ├── work-desktop.yml             # Specific device
 #   ├── home-server.yml              # Specific device
 #   │
@@ -35,17 +35,17 @@
 # ============================================================================
 
 # 1. Get your hostname:
-#    $ hostname
-#    bernie-laptop
+#    $ uname -n
+#    user-laptop
 
 # 2. Create your host file:
-#    $ cp laptop.yml.example bernie-laptop.yml
+#    $ cp laptop.yml.example user-laptop.yml
 
 # 3. Customize it:
-#    Edit bernie-laptop.yml with your specific settings
+#    Edit user-laptop.yml with your specific settings
 
 # 4. Run dotfiles:
-#    The script automatically loads: bernie-laptop.yml → laptop.yml → all.yml
+#    The script automatically loads: user-laptop.yml → laptop.yml → all.yml
 
 # ============================================================================
 # What to configure:
@@ -60,7 +60,7 @@
 # Security Note:
 # ============================================================================
 
-# Hostname files (e.g., bernie-laptop.yml) are NOT in .gitignore
+# Hostname files (e.g., user-laptop.yml) are NOT in .gitignore
 # Make sure they don't contain:
 #   - Passwords or API keys (use LastPass)
 #   - Private information
