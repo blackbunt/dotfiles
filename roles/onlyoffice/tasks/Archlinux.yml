@@ -10,6 +10,3 @@
   ansible.builtin.command:
     cmd: yay -S --noconfirm onlyoffice-bin
   when: onlyoffice_installed.rc != 0
-
-    
-
