@@ -1,73 +1,18 @@
 ---
-- name: naps2 | ArchLinux | Install naps2 & sane-airscan
-  block:
-    - name: naps2 | ArchLinux | Check if sane-airscan is installed
-      ansible.builtin.command:
-        cmd: "pacman -Q sane-airscan"
-      register: sane_airscan_installed
-      changed_when: false
-      failed_when: false
-      become: true
+- name: "naps2 | ArchLinux | Install sane-airscan"
+  community.general.pacman:
+    name: sane-airscan
+    state: present
+  become: true
 
-    - name: naps2 | ArchLinux | Install sane-airscan via pacman
-      pacman:
-        name: sane-airscan
-        state: present
-        update_cache: true
-      become: true
-      when: sane_airscan_installed.rc != 0
+- name: "naps2 | ArchLinux | Check if naps2 is installed"
+  ansible.builtin.command:
+    cmd: yay -Q naps2
+  register: naps2_installed
+  changed_when: false
+  failed_when: false
 
-    - name: naps2 | ArchLinux | Check if yay is installed
-      ansible.builtin.command:
-        cmd: "which yay"
-      register: yay_installed
-      changed_when: false
-      failed_when: yay_installed.rc != 0
-
-    - name: naps2 | ArchLinux | Install yay if not present
-      block:
-        - name: naps2 | ArchLinux | Install base-devel and git
-          pacman:
-            name:
-              - base-devel
-              - git
-            state: present
-            update_cache: true
-          become: true
-
-        - name: naps2 | ArchLinux | Clone yay repository
-          ansible.builtin.git:
-            repo: "https://aur.archlinux.org/yay.git"
-            dest: "/tmp/yay"
-            version: master
-          when: yay_installed.rc != 0
-
-        - name: naps2 | ArchLinux | Build and install yay
-          ansible.builtin.command:
-            cmd: "makepkg -si --noconfirm"
-            chdir: "/tmp/yay"
-          when: yay_installed.rc != 0
-          become: false
-      when: yay_installed.rc != 0
-
-    - name: naps2 | ArchLinux | Check if naps2 is installed
-      ansible.builtin.command:
-        cmd: "yay -Q naps2"
-      register: naps2_installed
-      changed_when: false
-      failed_when: false
-      when: yay_installed.rc == 0
-
-    - name: naps2 | ArchLinux | Clean yay cache for naps2
-      ansible.builtin.command:
-        cmd: "yay -Scc --noconfirm"
-      changed_when: true
-      become: false
-      when: yay_installed.rc == 0 and naps2_installed.rc != 0
-
-    - name: naps2 | ArchLinux | Install naps2 via yay
-      ansible.builtin.command:
-        cmd: "yay -S --noconfirm naps2"
-      changed_when: true
-      become: false
-      when: yay_installed.rc == 0 and naps2_installed.rc != 0
+- name: "naps2 | ArchLinux | Install naps2 from AUR"
+  ansible.builtin.command:
+    cmd: yay -S --noconfirm naps2
+  when: naps2_installed.rc != 0

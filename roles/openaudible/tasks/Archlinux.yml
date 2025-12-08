@@ -1,5 +1,12 @@
 ---
+- name: "openaudible | ArchLinux | Check if OpenAudible is installed"
+  ansible.builtin.command:
+    cmd: yay -Q openaudible-bin
+  register: openaudible_installed
+  changed_when: false
+  failed_when: false
+
 - name: "openaudible | ArchLinux | Install OpenAudible from AUR"
   ansible.builtin.command:
     cmd: yay -S --noconfirm openaudible-bin
-  changed_when: true
+  when: openaudible_installed.rc != 0

@@ -1,0 +1,6 @@
+---
+- name: "yay | ArchLinux | Install yay"
+  community.general.pacman:
+    name: yay
+    state: present
+  become: true

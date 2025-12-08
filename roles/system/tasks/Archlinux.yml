@@ -10,7 +10,6 @@
   community.general.pacman:
     name:
       - jq
-      - yay
       - bc
     state: present
   become: true

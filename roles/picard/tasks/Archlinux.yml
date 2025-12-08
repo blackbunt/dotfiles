@@ -1,0 +1,6 @@
+---
+- name: "picard | ArchLinux | Install MusicBrainz Picard"
+  community.general.pacman:
+    name: picard
+    state: present
+  become: true
