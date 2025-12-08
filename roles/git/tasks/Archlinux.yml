@@ -1,7 +1,6 @@
 ---
 - name: "git | ArchLinux | Install git"
   ansible.builtin.pacman:
-    name:
-      - git
+    name: git
     state: present
   become: true

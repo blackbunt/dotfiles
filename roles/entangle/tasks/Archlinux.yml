@@ -1,0 +1,6 @@
+---
+- name: "entangle | ArchLinux | Install entangle"
+  community.general.pacman:
+    name: entangle
+    state: present
+  become: true

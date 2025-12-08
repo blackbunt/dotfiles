@@ -77,4 +77,3 @@
       args:
         chdir: "/opt/auto-cpufreq/source"
       become: true
-

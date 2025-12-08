@@ -6,7 +6,7 @@
 
 - name: "fonts | ArchLinux | Check if Apple Fonts are installed"
   ansible.builtin.stat:
-    path: "~/.cache/yay/otf-apple-fonts/src/SF-Pro-Text-Medium.otf"
+    path: "~/.local/share/fonts/SF-Pro-Text-Medium.otf"
   register: apple_fonts_installed
 
 - name: "fonts | ArchLinux | Ensure font directory exists"
@@ -40,9 +40,11 @@
 - name: "fonts | ArchLinux | Install Apple Fonts using yay"
   ansible.builtin.command:
     cmd: yay -S --noconfirm otf-apple-fonts
+  changed_when: true
   when: not apple_fonts_installed.stat.exists
 
 - name: "fonts | ArchLinux | Update font cache"
   ansible.builtin.command:
     cmd: fc-cache -fv
+  changed_when: true
   when: not sfmono_installed.stat.exists or not apple_fonts_installed.stat.exists
