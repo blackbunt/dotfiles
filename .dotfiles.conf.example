@@ -73,9 +73,8 @@ LOCALE_IDENTIFICATION="de_DE.UTF-8"
 # ----------------------------------------------------------------------------
 # LastPass Settings
 # ----------------------------------------------------------------------------
-# Skip LastPass authentication check
-# Useful for systems where LastPass is not needed
-# SKIP_LASTPASS_CHECK=false
+# Your LastPass email (required for login)
+LASTPASS_EMAIL="your-email@example.com"
 
 # ----------------------------------------------------------------------------
 # Debug Settings

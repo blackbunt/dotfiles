@@ -61,9 +61,9 @@ LOCALE_IDENTIFICATION="${LOCALE_IDENTIFICATION:-de_DE.UTF-8}"
 
 # Optional settings
 SKIP_BECOME_PASS="${SKIP_BECOME_PASS:-false}"
-SKIP_LASTPASS_CHECK="${SKIP_LASTPASS_CHECK:-false}"
 DEBUG="${DEBUG:-false}"
 KEEP_LOG="${KEEP_LOG:-false}"
+LASTPASS_EMAIL="${LASTPASS_EMAIL:-}"
 
 # Paths
 DOTFILES_LOG="$HOME/.dotfiles.log"
@@ -168,17 +168,20 @@ function arch_based_setup() {
     _cmd "sudo pacman -S --noconfirm openssh"
   fi
 
-  __task "Setting Locale"
-  _cmd "sudo localectl set-locale LANG=$LOCALE_LANG \
-      LC_NUMERIC=$LOCALE_NUMERIC \
-      LC_TIME=$LOCALE_TIME \
-      LC_MONETARY=$LOCALE_MONETARY \
-      LC_PAPER=$LOCALE_PAPER \
-      LC_NAME=$LOCALE_NAME \
-      LC_ADDRESS=$LOCALE_ADDRESS \
-      LC_TELEPHONE=$LOCALE_TELEPHONE \
-      LC_MEASUREMENT=$LOCALE_MEASUREMENT \
-      LC_IDENTIFICATION=$LOCALE_IDENTIFICATION"
+  # Optional: Set locale if configured
+  if [ -n "$LOCALE_LANG" ] && [ "$LOCALE_LANG" != "en_GB.UTF-8" ]; then
+    __task "Setting Locale"
+    _cmd "sudo localectl set-locale LANG=$LOCALE_LANG \
+        LC_NUMERIC=$LOCALE_NUMERIC \
+        LC_TIME=$LOCALE_TIME \
+        LC_MONETARY=$LOCALE_MONETARY \
+        LC_PAPER=$LOCALE_PAPER \
+        LC_NAME=$LOCALE_NAME \
+        LC_ADDRESS=$LOCALE_ADDRESS \
+        LC_TELEPHONE=$LOCALE_TELEPHONE \
+        LC_MEASUREMENT=$LOCALE_MEASUREMENT \
+        LC_IDENTIFICATION=$LOCALE_IDENTIFICATION"
+  fi
 }
 
 function macos_setup() {
@@ -208,31 +211,44 @@ update_ansible_galaxy() {
 }
 
 function confirmVaultAccess() {
-  if [ "$SKIP_LASTPASS_CHECK" = "true" ]; then
-    printf "${LYELLOW}  [!] Skipping LastPass check (SKIP_LASTPASS_CHECK=true)\n"
-    return 0
-  fi
-
   __task "Checking for LastPass CLI"
   if ! command -v lpass >/dev/null 2>&1; then
     printf "${OVERWRITE} ${RED}[X] Checking for LastPass CLI\n"
     printf " ${WARNING}${RED}   LastPass CLI is not installed.${NC}\n"
-    printf " ${CYAN}   Tip: Set SKIP_LASTPASS_CHECK=true in ~/.dotfiles.conf to skip this check.${NC}\n"
     exit 1
   fi
+  
   local lpass_version
   lpass_version=$(lpass --version)
-  __task "LastPass CLI found: [$lpass_version] -- Authenticating..."
-  if ! lpass status >/dev/null 2>&1; then
-    printf "${OVERWRITE} ${RED} [X] LastPass CLI found: [$lpass_version] -- Authentication failed\n"
-    printf "   ${WARNING}${RED}  use 'lpass login' to log into your LastPass Account.${NC}\n"
+  printf "${OVERWRITE}${LGREEN}  [✓] LastPass CLI found: [$lpass_version]\n"
+  
+  __task "Checking LastPass authentication status"
+  if lpass status >/dev/null 2>&1; then
+    local logged_in_user
+    logged_in_user=$(lpass status | grep -oP '(?<=Logged in as ).*(?=\.)' || echo "unknown")
+    printf "${OVERWRITE}${LGREEN}  [✓] Already logged in as: ${logged_in_user}\n"
+    return 0
+  fi
+  
+  # Not logged in - try to login
+  printf "${OVERWRITE}${LYELLOW}  [!] Not logged in to LastPass\n"
+  
+  if [ -z "$LASTPASS_EMAIL" ]; then
+    printf "${RED}   ERROR: LASTPASS_EMAIL not set in ~/.dotfiles.conf${NC}\n"
+    printf "${CYAN}   Please add: LASTPASS_EMAIL=\"your-email@example.com\" to ~/.dotfiles.conf${NC}\n"
     exit 1
   fi
-  _task_done && printf "${GREEN}  [✓] Successfully authenticated with LastPass CLI! \n"
-  return
+  
+  __task "Logging in to LastPass as: $LASTPASS_EMAIL"
+  if lpass login "$LASTPASS_EMAIL"; then
+    printf "${OVERWRITE}${LGREEN}  [✓] Successfully logged in to LastPass!\n"
+    return 0
+  else
+    printf "${OVERWRITE}${LRED}  [X] Failed to login to LastPass\n"
+    printf "   ${WARNING}${RED}  Please check your email and password.${NC}\n"
+    exit 1
+  fi
 }
-
-
 
 detect_os() {
   if [ -f /etc/os-release ]; then
@@ -245,6 +261,7 @@ detect_os() {
 
 dotfiles_os=$(detect_os)
 __task "Loading Setup for detected OS: $dotfiles_os"
+
 case $dotfiles_os in
   ubuntu)
     ubuntu_setup
@@ -302,13 +319,31 @@ pushd "$DOTFILES_DIR" > /dev/null 2>&1
 
 confirmVaultAccess
 
-# Build ansible-playbook command
-ANSIBLE_CMD="ansible-playbook \"$DOTFILES_DIR/main.yml\""
+# Create temporary password cache for ansible
+ANSIBLE_BECOME_PASS_FILE="$HOME/.ansible_become_pass.$$"
+trap 'rm -f "$ANSIBLE_BECOME_PASS_FILE"' EXIT
 
-# Add become pass flag if not skipped
-if [ "$SKIP_BECOME_PASS" != "true" ]; then
-  ANSIBLE_CMD="$ANSIBLE_CMD --ask-become-pass"
-fi
+__task "Requesting sudo password for Ansible"
+# Read password securely (no echo) and validate it
+while true; do
+  read -s -p "BECOME password: " BECOME_PASSWORD
+  echo
+  
+  # Validate password by testing sudo
+  if echo "$BECOME_PASSWORD" | sudo -S -v 2>/dev/null; then
+    # Password is correct, save to temp file
+    echo "$BECOME_PASSWORD" > "$ANSIBLE_BECOME_PASS_FILE"
+    chmod 600 "$ANSIBLE_BECOME_PASS_FILE"
+    _task_done
+    break
+  else
+    printf "${LRED}  [X] Incorrect password, try again\n"
+  fi
+done
+
+# Build ansible-playbook command with password file
+ANSIBLE_CMD="ansible-playbook \"$DOTFILES_DIR/main.yml\""
+ANSIBLE_CMD="$ANSIBLE_CMD --extra-vars \"ansible_become_pass={{ lookup('file', '$ANSIBLE_BECOME_PASS_FILE') }}\""
 
 # Add any additional arguments passed to dotfiles script
 if [ $# -gt 0 ]; then

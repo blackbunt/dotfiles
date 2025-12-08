@@ -39,6 +39,20 @@ DOTFILES_REPO="git@gitlab.com:user/dotfiles.git" ./bin/dotfiles
 DOTFILES_BRANCH="develop"  # Test changes on develop branch
 ```
 
+### LastPass Configuration
+
+**Required:** Set your LastPass email in `~/.dotfiles.conf`:
+```bash
+LASTPASS_EMAIL="your-email@example.com"
+```
+
+The script will:
+1. Check if you're already logged in to LastPass
+2. If not, automatically login using the configured email
+3. Prompt for password if needed
+
+This eliminates the need to manually run `lpass login` before each run.
+
 ### Locale Configuration
 
 Example for US English with metric system:
@@ -66,11 +80,6 @@ LOCALE_MEASUREMENT="de_DE.UTF-8"
 **Skip sudo password prompt** (requires NOPASSWD sudo):
 ```bash
 SKIP_BECOME_PASS=true
-```
-
-**Skip LastPass authentication** (for systems without LastPass):
-```bash
-SKIP_LASTPASS_CHECK=true
 ```
 
 **Enable debug mode:**
@@ -155,14 +164,29 @@ ssh-add ~/.ssh/id_ed25519
 
 ### LastPass Issues
 
-Skip LastPass check temporarily:
+The script automatically handles LastPass authentication:
+
+**If you see "LASTPASS_EMAIL not set":**
 ```bash
-SKIP_LASTPASS_CHECK=true ./bin/dotfiles
+# Add to ~/.dotfiles.conf
+LASTPASS_EMAIL="your-email@example.com"
 ```
 
-Or permanently in `~/.dotfiles.conf`:
+**If login fails:**
+- Check your email address is correct
+- Verify your LastPass password
+- Check internet connection
+- Try manual login first: `lpass login your-email@example.com`
+
+**Check current status:**
 ```bash
-SKIP_LASTPASS_CHECK=true
+lpass status
+```
+
+**Manual logout/login:**
+```bash
+lpass logout
+lpass login your-email@example.com
 ```
 
 ### Debug Mode
@@ -187,13 +211,13 @@ KEEP_LOG=true  # Keep log file after run
 DOTFILES_REPO="git@github.com:myusername/private-dotfiles.git"
 DOTFILES_REPO_HTTPS="https://github.com/myusername/private-dotfiles.git"
 DOTFILES_BRANCH="main"
+LASTPASS_EMAIL="my-email@example.com"
 ```
 
 ### Minimal Server Setup
 
 ```bash
 # ~/.dotfiles.conf for server
-SKIP_LASTPASS_CHECK=true
 LOCALE_LANG="en_US.UTF-8"
 LOCALE_NUMERIC="en_US.UTF-8"
 LOCALE_TIME="en_US.UTF-8"
