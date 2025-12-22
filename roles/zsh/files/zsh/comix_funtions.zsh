@@ -116,7 +116,16 @@ cbr2cbz() {
 
         if [[ -d "$input" ]]; then
             __task "Scan directory for .cbr: $input"
-            _cmd "find \"$input\" -type f -iname '*.cbr' -print0 | xargs -0 -I{} zsh -c 'cbr2cbz ${force:+--force} ${keep:+--keep} ${do_optimize:+} ${do_optimize:---no-optimize} ${analyze:+--analyze} --analyze-th $analyze_th --jpg-quality $jpg_quality \"{}\"'"
+            local file _opts
+            while IFS= read -r -d '' file; do
+                _opts=()
+                (( force )) && _opts+=(--force)
+                (( keep )) && _opts+=(--keep)
+                (( do_optimize )) || _opts+=(--no-optimize)
+                (( analyze )) && _opts+=(--analyze)
+                _opts+=(--analyze-th "$analyze_th" --jpg-quality "$jpg_quality")
+                cbr2cbz "${_opts[@]}" "$file"
+            done < <(find "$input" -type f -iname '*.cbr' -print0)
             _task_done
             continue
         fi
