@@ -1,8 +1,27 @@
 ---
-- name: "btop | ArchLinux | Install btop and ROCm SMI lib (AMD GPU)"
+- name: "btop | ArchLinux | Install btop"
   community.general.pacman:
-    name:
-      - btop
-      - rocm-smi-lib
+    name: btop
     state: present
   become: true
+
+- name: "btop | ArchLinux | Detect authorized Thunderbolt peripherals"
+  shell: "grep -h '^1$' /sys/bus/thunderbolt/devices/*/authorized 2>/dev/null | wc -l"
+  register: tb_auth_count
+  changed_when: false
+  failed_when: false
+
+- name: "btop | ArchLinux | Detect AMD GPU (VGA/Display)"
+  shell: "lspci -nn | grep -Ei 'VGA|Display' | grep -Ei 'AMD|Advanced Micro Devices|Radeon' || true"
+  register: amd_gpu_detect
+  changed_when: false
+  failed_when: false
+
+- name: "btop | ArchLinux | Install rocm-smi-lib when Thunderbolt AMD eGPU is present"
+  community.general.pacman:
+    name: rocm-smi-lib
+    state: present
+  become: true
+  when:
+    - tb_auth_count.stdout | int > 0
+    - amd_gpu_detect.stdout | length > 0
