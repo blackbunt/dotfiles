@@ -10,11 +10,12 @@
     "editor.formatOnSave": true,
     "editor.tabSize": 2,
     "editor.insertSpaces": true,
-    "editor.rulers": [120],
+    "editor.rulers": [
+      120
+    ],
     "files.trimTrailingWhitespace": true,
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
-    
     // File Associations
     "files.associations": {
       "*.yml": "ansible",
@@ -23,7 +24,6 @@
       "inventory.ini": "ini",
       "Taskfile.yml": "yaml"
     },
-    
     // YAML & Ansible Settings
     "yaml.format.enable": true,
     "yaml.format.singleQuote": false,
@@ -37,7 +37,6 @@
     "ansible.python.interpreterPath": "${workspaceFolder}/.venv/bin/python",
     "ansible.validation.enabled": true,
     "ansible.validation.lint.enabled": true,
-    
     // Python Settings (for Ansible & callback plugins)
     "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
     "python.analysis.extraPaths": [
@@ -47,14 +46,11 @@
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
     "python.formatting.provider": "black",
-    
     // Shell Script Settings
     "shellcheck.enable": true,
     "shellformat.flag": "-i 2 -ci",
-    
     // Git Settings
     "git.ignoreLimitWarning": true,
-    
     // Files to Exclude from Explorer
     "files.exclude": {
       "**/.git": false,
@@ -64,7 +60,6 @@
       "**/.DS_Store": true,
       "**/callback_plugins/__pycache__": true
     },
-    
     // Search Settings
     "search.exclude": {
       "**/.venv": true,

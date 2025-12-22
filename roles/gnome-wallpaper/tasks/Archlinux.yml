@@ -15,7 +15,7 @@
   when: gnome_installed.rc == 0
 
 - name: "gnome-wallpaper | ArchLinux | Check if Linux Dynamic Wallpapers repo exists"
-  stat:
+  ansible.builtin.stat:
     path: "{{ ansible_env.HOME }}/.local/share/backgrounds/Linux_Dynamic_Wallpapers/.git"
   register: repo_status
 
@@ -23,8 +23,9 @@
   ansible.builtin.command:
     cmd: "git pull"
     chdir: "{{ ansible_env.HOME }}/.local/share/backgrounds/Linux_Dynamic_Wallpapers"
+  register: git_pull_result
   when: repo_status.stat.exists
-  changed_when: true
+  changed_when: "'Already up to date' not in git_pull_result.stdout"
 
 - name: "gnome-wallpaper | ArchLinux | Clone Linux Dynamic Wallpapers repository"
   ansible.builtin.git:
@@ -38,7 +39,6 @@
   ansible.builtin.command:
     cmd: "bash install.sh"
     chdir: "{{ ansible_env.HOME }}/.local/share/backgrounds/Linux_Dynamic_Wallpapers"
-  become: true
   changed_when: true
 
 - name: gnome-wallpaper | ArchLinux | Check if the dynamic wallpaper file exists
@@ -57,7 +57,8 @@
   args:
     executable: /bin/bash
   become: false
-  when: gnome_running and desert_sands_exists
+  changed_when: true
+  when: (gnome_running.stdout == "GNOME") and (desert_sands_exists)
 
 - name: "gnome-wallpaper | ArchLinux | Set GNOME wallpaper for dark mode"
   ansible.builtin.shell: |
@@ -66,4 +67,5 @@
   args:
     executable: /bin/bash
   become: false
-  when: gnome_running and desert_sands_exists
+  changed_when: true
+  when: (gnome_running.stdout == "GNOME") and (desert_sands_exists)
