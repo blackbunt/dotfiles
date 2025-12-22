@@ -11,7 +11,25 @@
   changed_when: false
   failed_when: false
 
-- name: "btop | ArchLinux | Detect AMD GPU (VGA/Display)"
+- name: "btop | ArchLinux | Detect AMD GPU behind Thunderbolt (sysfs)"
+  shell: |
+    c=0
+    for d in /sys/bus/thunderbolt/devices/*/domain*/devices/*; do
+      [ -f "$d/vendor" ] && [ -f "$d/class" ] || continue
+      v=$(cat "$d/vendor")
+      cl=$(cat "$d/class")
+      case "$v:$cl" in
+        0x1002:0x030000|0x1002:0x030200|0x1002:0x038000)
+          c=$((c+1))
+          ;;
+      esac
+    done
+    echo "$c"
+  register: tb_amd_gpu_count
+  changed_when: false
+  failed_when: false
+
+- name: "btop | ArchLinux | Detect AMD GPU (fallback via lspci)"
   shell: "lspci -nn | grep -Ei 'VGA|Display' | grep -Ei 'AMD|Advanced Micro Devices|Radeon' || true"
   register: amd_gpu_detect
   changed_when: false
@@ -24,4 +42,4 @@
   become: true
   when:
     - tb_auth_count.stdout | int > 0
-    - amd_gpu_detect.stdout | length > 0
+    - (tb_amd_gpu_count.stdout | int) > 0 or (amd_gpu_detect.stdout | length) > 0
