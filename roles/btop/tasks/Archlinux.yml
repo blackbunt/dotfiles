@@ -1,6 +1,8 @@
 ---
-- name: "btop | ArchLinux | Install btop"
+- name: "btop | ArchLinux | Install btop and ROCm SMI lib (AMD GPU)"
   community.general.pacman:
-    name: btop
+    name:
+      - btop
+      - rocm-smi-lib
     state: present
   become: true
