@@ -19,17 +19,17 @@ Convert .cbr files to .cbz. PATH may be a file or directory.
 If PATH is omitted, the current directory is used.
 
 Options:
-    -f, --force           Overwrite existing .cbz if present
-    -k, --keep            Keep original .cbr after successful conversion
-            --no-optimize     Skip image optimization (faster, larger files)
-            --jpg-quality N   JPEG quality (default: 85) when optimizing
+      -f, --force           Overwrite existing .cbz if present
+      -k, --keep            Keep original .cbr after successful conversion
+          --no-optimize     Skip image optimization (faster, larger files)
+          --jpg-quality N   (ignored in lossless mode)
             --analyze         Analyze potential savings only; do not modify/create files
             --analyze-th N    Report only if potential saving >= N%% (default: 2)
     -h, --help            Show this help
 
 Notes:
     - Extraction tries unrar, then unar, then 7z.
-    - Image optimization uses oxipng (PNG) and mogrify (JPEG) if available.
+    - Lossless optimization uses oxipng (PNG) and jpegtran (JPEG) if available.
 EOF
 }
 
@@ -54,21 +54,27 @@ _extract_cbr() {
 }
 
 _optimize_images() {
-    local root="$1" jpg_q="$2"; shift 2
-    local have_oxipng=0 have_mogrify=0
+    # Lossless-only optimization for PNG and JPEG
+    local root="$1"; shift
+    local have_oxipng=0 have_jpegtran=0
     command -v oxipng >/dev/null 2>&1 && have_oxipng=1
-    command -v mogrify >/dev/null 2>&1 && have_mogrify=1
+    command -v jpegtran >/dev/null 2>&1 && have_jpegtran=1
 
     if (( have_oxipng )); then
-        _cmd "find \"$root\" -type f -iname '*.png' -print0 | xargs -0 -r oxipng -o 4 -strip all"
+        _cmd "find \"$root\" -type f -iname '*.png' -print0 | xargs -0 -r oxipng -o 4 -strip all -q"
     else
         echo "warn: oxipng not found; skipping PNG optimization" >&2
     fi
 
-    if (( have_mogrify )); then
-        _cmd "find \"$root\" -type f \( -iname '*.jpg' -o -iname '*.jpeg' \) -print0 | xargs -0 -r mogrify -quality $jpg_q -strip"
+    if (( have_jpegtran )); then
+        # Use jpegtran to perform lossless optimize/progressive transform
+        while IFS= read -r -d '' f; do
+            local tmpf="$f.tmp"
+            jpegtran -copy none -optimize -progressive "$f" > "$tmpf" 2>/dev/null || cp -f "$f" "$tmpf"
+            mv -f "$tmpf" "$f" 2>/dev/null || true
+        done < <(find "$root" -type f \( -iname '*.jpg' -o -iname '*.jpeg' \) -print0)
     else
-        echo "warn: mogrify not found; skipping JPEG optimization" >&2
+        echo "warn: jpegtran not found; skipping JPEG optimization" >&2
     fi
 }
 
@@ -160,7 +166,7 @@ cbr2cbz() {
         _task_done
 
         if (( analyze )); then
-            __task "Analyze potential savings in extracted content"
+            __task "Analyze potential savings in extracted content (lossless)"
             local orig_total=0 opt_total=0 count_png=0 count_jpg=0 save_png=0 save_jpg=0
             local f ext src_size new_size pct tmp_anadir
             tmp_anadir="$(mktemp -d)"
@@ -187,16 +193,7 @@ cbr2cbz() {
                         ;;
                     jpg|jpeg)
                         (( count_jpg++ ))
-                        if command -v jpegoptim >/dev/null 2>&1; then
-                            jpegoptim --max=$jpg_quality --strip-all --all-progressive --quiet "$tmpf" >/dev/null 2>&1 || true
-                            new_size=$(wc -c < "$tmpf" | tr -d ' ')
-                            (( opt_total += new_size ))
-                            if (( src_size > 0 )); then
-                                pct=$(( (100*(src_size-new_size))/src_size ))
-                                (( pct >= analyze_th )) && (( save_jpg++ ))
-                            fi
-                        elif command -v jpegtran >/dev/null 2>&1; then
-                            # lossless try
+                        if command -v jpegtran >/dev/null 2>&1; then
                             local tmpf2="$tmpf.out"
                             jpegtran -copy none -optimize -progressive "$f" > "$tmpf2" 2>/dev/null || cp -f "$f" "$tmpf2"
                             new_size=$(wc -c < "$tmpf2" | tr -d ' ')
@@ -227,9 +224,47 @@ cbr2cbz() {
         fi
 
         if (( do_optimize )); then
-            __task "Optimize images (PNG/JPEG)"
-            _optimize_images "$TMP_DIR" "$jpg_quality"
+            # Perform a quick lossless analysis and optimize only if savings exist
+            __task "Pre-check lossless optimization"
+            local check_saved=0
+            {
+                local tmp_anadir
+                tmp_anadir="$(mktemp -d)"
+                local f ext src_size new_size
+                while IFS= read -r -d '' f; do
+                    ext="${f##*.}"; ext="${ext:l}"
+                    src_size=$(wc -c < "$f" | tr -d ' ')
+                    local tmpf="$tmp_anadir/$(basename "$f")"
+                    cp -f -- "$f" "$tmpf" 2>/dev/null || continue
+                    case "$ext" in
+                        png)
+                            if command -v oxipng >/dev/null 2>&1; then
+                                oxipng -o 4 -strip all -q "$tmpf" >/dev/null 2>&1 || true
+                                new_size=$(wc -c < "$tmpf" | tr -d ' ')
+                                (( check_saved += (src_size - new_size) ))
+                            fi
+                            ;;
+                        jpg|jpeg)
+                            if command -v jpegtran >/dev/null 2>&1; then
+                                local tmpf2="$tmpf.out"
+                                jpegtran -copy none -optimize -progressive "$f" > "$tmpf2" 2>/dev/null || cp -f "$f" "$tmpf2"
+                                new_size=$(wc -c < "$tmpf2" | tr -d ' ')
+                                (( check_saved += (src_size - new_size) ))
+                            fi
+                            ;;
+                    esac
+                done < <(find "$TMP_DIR" -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -print0)
+                rm -rf "$tmp_anadir" 2>/dev/null || true
+            }
             _task_done
+
+            if (( check_saved > 0 )); then
+                __task "Optimize images losslessly (PNG via oxipng, JPEG via jpegtran)"
+                _optimize_images "$TMP_DIR"
+                _task_done
+            else
+                echo "Skip optimization: no lossless savings detected"
+            fi
         fi
 
         __task "Create .cbz archive"
