@@ -1,57 +1,178 @@
 #!/usr/bin/env zsh
 
+# Provide no-op fallbacks for task helper functions if not defined
+if ! typeset -f __task >/dev/null 2>&1; then
+    __task() { echo "-- $*"; }
+fi
+if ! typeset -f _cmd >/dev/null 2>&1; then
+    _cmd() { eval "$*"; }
+fi
+if ! typeset -f _task_done >/dev/null 2>&1; then
+    _task_done() { :; }
+fi
+
+_cbr2cbz_usage() {
+    cat <<'EOF'
+Usage: cbr2cbz [options] [PATH]
+
+Convert .cbr files to .cbz. PATH may be a file or directory.
+If PATH is omitted, the current directory is used.
+
+Options:
+    -f, --force           Overwrite existing .cbz if present
+    -k, --keep            Keep original .cbr after successful conversion
+            --no-optimize     Skip image optimization (faster, larger files)
+            --jpg-quality N   JPEG quality (default: 85) when optimizing
+    -h, --help            Show this help
+
+Notes:
+    - Extraction tries unrar, then unar, then 7z.
+    - Image optimization uses oxipng (PNG) and mogrify (JPEG) if available.
+EOF
+}
+
+_extract_cbr() {
+    local src="$1" dest="$2"
+    if command -v unrar >/dev/null 2>&1; then
+        if unrar x -inul -- "$src" "$dest"; then
+            return 0
+        fi
+    fi
+    if command -v unar >/dev/null 2>&1; then
+        if unar -quiet -o "$dest" -- "$src"; then
+            return 0
+        fi
+    fi
+    if command -v 7z >/dev/null 2>&1; then
+        if 7z x -y -o"$dest" -- "$src" >/dev/null; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
+_optimize_images() {
+    local root="$1" jpg_q="$2"; shift 2
+    local have_oxipng=0 have_mogrify=0
+    command -v oxipng >/dev/null 2>&1 && have_oxipng=1
+    command -v mogrify >/dev/null 2>&1 && have_mogrify=1
+
+    if (( have_oxipng )); then
+        _cmd "find \"$root\" -type f -iname '*.png' -print0 | xargs -0 -r oxipng -o 4 -strip all"
+    else
+        echo "warn: oxipng not found; skipping PNG optimization" >&2
+    fi
+
+    if (( have_mogrify )); then
+        _cmd "find \"$root\" -type f \( -iname '*.jpg' -o -iname '*.jpeg' \) -print0 | xargs -0 -r mogrify -quality $jpg_q -strip"
+    else
+        echo "warn: mogrify not found; skipping JPEG optimization" >&2
+    fi
+}
+
 cbr2cbz() {
-    local input="$*"
+    setopt local_options no_nomatch
 
-    # Wenn kein Parameter übergeben wurde → aktuelles Verzeichnis nutzen
-    if [[ -z "$input" ]]; then
-        input="."
+    local force=0 keep=0 do_optimize=1 jpg_quality=85
+    local args=()
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -f|--force) force=1; shift ;;
+            -k|--keep) keep=1; shift ;;
+            --no-optimize) do_optimize=0; shift ;;
+            --jpg-quality)
+                shift; [[ -n "$1" ]] || { echo "--jpg-quality requires a value" >&2; return 2; }
+                jpg_quality="$1"; shift ;;
+            --jpg-quality=*) jpg_quality="${1#*=}"; shift ;;
+            -h|--help) _cbr2cbz_usage; return 0 ;;
+            --) shift; while [[ $# -gt 0 ]]; do args+=("$1"); shift; done ;;
+            *) args+=("$1"); shift ;;
+        esac
+    done
+
+    # Default path is current directory
+    if (( ${#args} == 0 )); then
+        args=(".")
     fi
 
-    # Tilde (~) expandieren, falls nötig
-    [[ "$input" = ~* ]] && input="${input/#\~/$HOME}"
+    # Process each argument
+    local input
+    for input in "$args[@]"; do
+        # Tilde expand if provided as string
+        if [[ "$input" = ~* ]]; then
+            input="${input/#\~/$HOME}"
+        fi
 
-    # Prüfen ob Pfad existiert
-    if [[ ! -e "$input" ]]; then
-        echo "Error: File or directory not found: $input"
-        return 1
-    fi
+        if [[ ! -e "$input" ]]; then
+            echo "Error: File or directory not found: $input" >&2
+            continue
+        fi
 
-    # Wenn ein Verzeichnis: rekursiv alle .cbr-Dateien darin verarbeiten
-    if [[ -d "$input" ]]; then
-        find "$input" -type f -iname '*.cbr' | while read -r cbr; do
-            cbr2cbz "$cbr"
-        done
-        return
-    fi
+        if [[ -d "$input" ]]; then
+            __task "Scan directory for .cbr: $input"
+            _cmd "find \"$input\" -type f -iname '*.cbr' -print0 | xargs -0 -I{} zsh -c 'cbr2cbz ${force:+--force} ${keep:+--keep} ${do_optimize:+} ${do_optimize:---no-optimize} --jpg-quality $jpg_quality \"{}\"'"
+            _task_done
+            continue
+        fi
 
-    # Einzelne Datei verarbeiten
-    local CBR_FILE="$input"
-    local BASENAME="$(basename "${CBR_FILE%.*}")"
-    local DIRNAME="$(dirname "$CBR_FILE")"
-    local TMP_DIR="$(mktemp -d)"
-    local CBZ_FILE="$DIRNAME/$BASENAME.cbz"
+        # Single file
+        local CBR_FILE="$input"
+        local BASENAME
+        BASENAME="$(basename "${CBR_FILE%.*}")"
+        local DIRNAME
+        DIRNAME="$(dirname "$CBR_FILE")"
+        local TMP_DIR
+        TMP_DIR="$(mktemp -d)"
+        local CBZ_FILE="$DIRNAME/$BASENAME.cbz"
 
-    __task "Unpack \"$CBR_FILE\""
-    _cmd "unrar x -inul \"$CBR_FILE\" \"$TMP_DIR\""
-    _task_done
+        # Ensure cleanup on exit/error
+        local cleanup
+        cleanup() { [[ -n "$TMP_DIR" && -d "$TMP_DIR" ]] && rm -rf "$TMP_DIR"; }
+        trap cleanup EXIT INT TERM
 
-    __task "Optimize images"
-    _cmd "find \"$TMP_DIR\" -iname '*.png' -exec oxipng -o 4 -strip all {} \;"
-    _cmd "find \"$TMP_DIR\" -iname '*.jpg' -exec mogrify -quality 85 -strip {} \;"
-    _task_done
+        if [[ -e "$CBZ_FILE" && $force -ne 1 ]]; then
+            echo "Skip (exists): $CBZ_FILE (use -f to overwrite)" >&2
+            cleanup; trap - EXIT INT TERM
+            continue
+        fi
 
-    __task "Creating .cbz"
-    _cmd "(cd \"$TMP_DIR\" && zip -r -q \"$CBZ_FILE\" .)"
-    _task_done
+        __task "Unpack \"$CBR_FILE\""
+        if ! _extract_cbr "$CBR_FILE" "$TMP_DIR"; then
+            echo "Error: failed to extract '$CBR_FILE' (need unrar/unar/7z)" >&2
+            cleanup; trap - EXIT INT TERM
+            continue
+        fi
+        _task_done
 
-    __task "Compress .cbz file with advzip"
-    _cmd "advzip -z -4 \"$CBZ_FILE\""
-    _task_done
+        if (( do_optimize )); then
+            __task "Optimize images (PNG/JPEG)"
+            _optimize_images "$TMP_DIR" "$jpg_quality"
+            _task_done
+        fi
 
-    __task "Cleanup"
-    _cmd "rm -r \"$TMP_DIR\""
-    _task_done
+        __task "Create .cbz archive"
+        local OUT_TMP="$CBZ_FILE.$$"
+        _cmd "(cd \"$TMP_DIR\" && zip -r -q -X \"$OUT_TMP\" .)" || { echo "Error: zip failed" >&2; cleanup; trap - EXIT INT TERM; continue; }
+        _task_done
 
-    echo "Done: \"$CBZ_FILE\""
+        if command -v advzip >/dev/null 2>&1; then
+            __task "Compress .cbz with advzip"
+            _cmd "advzip -z -4 \"$OUT_TMP\""
+            _task_done
+        fi
+
+        __task "Finalize"
+        _cmd "mv -f \"$OUT_TMP\" \"$CBZ_FILE\""
+        if [[ $keep -ne 1 ]]; then
+            _cmd "rm -f -- \"$CBR_FILE\""
+        fi
+        _task_done
+
+        __task "Cleanup"
+        cleanup; trap - EXIT INT TERM
+        _task_done
+
+        echo "Done: \"$CBZ_FILE\""
+    done
 }
