@@ -7,3 +7,9 @@ roles/neovim/files/lazy-lock.json
 *.DS_Store
 test.sh
 main.yml.bak
+.venv
+
+# User-specific configuration
+.dotfiles.conf
+.dotfiles.log
+.dotfiles_run

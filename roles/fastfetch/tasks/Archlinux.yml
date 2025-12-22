@@ -1,6 +1,6 @@
 ---
 - name: "fastfetch | Archlinux | Install fastfetch"
   community.general.pacman:
-    name: lsd
+    name: fastfetch
     state: present
   become: true

@@ -1,0 +1,35 @@
+---
+# Host-specific configuration for hostname: x1-cl4p-tp
+# This file overrides group defaults and category fallbacks.
+# Priority: host_vars/<hostname>.yml > host_vars/<category>.yml > group_vars/all.yml
+
+# Set the category for this host (used as fallback)
+host_category: laptop
+
+# If you want to fully control which roles run on this host,
+# uncomment and set `default_roles` below. Otherwise this host
+# will inherit defaults from `laptop.yml.example` (or `laptop.yml`).
+
+# default_roles:
+#   - system
+#   - alacritty
+#   - auto-cpufreq
+#   - btop
+#   - fonts
+#   - git
+#   - lsd
+#   - obsidian
+#   - vs-code
+
+# Example host-specific overrides
+# display:
+#   scaling: 1.25
+#   night_light: true
+
+# power:
+#   suspend_timeout: 10
+#   lid_close_action: "suspend"
+
+# Notes:
+# - Keep secrets out of this file. Use LastPass references if needed.
+# - Customize any variable that is used by roles (see role docs).

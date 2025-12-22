@@ -1,0 +1,68 @@
+---
+# ============================================================================
+# Laptop Category Configuration
+# ============================================================================
+# This file is used as fallback for all hosts matching "laptop" pattern
+# or when a specific hostname file doesn't exist
+#
+# To use:
+#   1. Copy this to your hostname: cp laptop.yml.example <hostname>.yml
+#   2. Customize for your specific laptop
+# ============================================================================
+
+# Roles to run on laptops
+default_roles:
+  - system
+  - alacritty
+  - auto-cpufreq          # Battery optimization
+  - btop
+  - fonts
+  - fzf
+  - git
+  - gnome-wallpaper
+  - gnome-apps
+  - lazygit
+  - lsd
+  - nala
+  - ncdu
+  - obsidian
+  - spotify
+  - ssh
+  - syncthing
+  - tailscale
+  - tldr
+  - vlc
+  - vs-code
+  - zellij
+  - zoxide
+  - zsh
+
+# Roles to exclude (optional)
+# exclude_roles:
+#   - teamviewer
+#   - discord
+
+# Laptop-specific settings
+laptop_mode: true
+
+# Battery settings (used by various roles)
+battery:
+  optimization: true
+  threshold: 80           # Stop charging at 80%
+  conservation: true
+
+# Display settings
+display:
+  scaling: 1.0           # HiDPI scaling
+  night_light: true
+  brightness_auto: true
+
+# Power management
+power:
+  suspend_timeout: 15    # minutes
+  lid_close_action: "suspend"
+
+# Bluetooth (laptops often use BT headphones)
+bluetooth:
+  enabled: true
+  auto_enable: true

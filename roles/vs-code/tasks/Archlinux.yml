@@ -1,0 +1,6 @@
+---
+- name: "vs-code | {{ ansible_distribution }} | Install Visual Studio Code"
+  community.general.pacman:
+    name: visual-studio-code-bin
+    state: latest
+  become: true

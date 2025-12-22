@@ -34,19 +34,21 @@
   failed_when: false
 
 - name: "auto-cpufreq | Update auto-cpufreq (if already installed)"
+  when:
+    - auto_cpufreq_installed.rc == 0
+    - (auto_cpufreq_latest_release | regex_replace('^v', '')) != (current_auto_cpufreq_version.stdout | default('') | regex_replace('^v', ''))
   block:
     - name: "Auto-CpuFreq | Run auto-cpufreq --update"
       ansible.builtin.command:
-        cmd: "sudo auto-cpufreq --update"
+        cmd: "auto-cpufreq --update"
       become: true
 
     - name: "auto-cpufreq | Run auto-cpufreq installer after update"
       ansible.builtin.command:
-        cmd: "sudo ./auto-cpufreq-installer"
+        cmd: "./auto-cpufreq-installer"
       args:
         chdir: "/opt/auto-cpufreq/source"
       become: true
-  when: (auto_cpufreq_latest_release | regex_replace('^v', '')) != (current_auto_cpufreq_version.stdout | default('') | regex_replace('^v', ''))
 
 - name: "auto-cpufreq | Install auto-cpufreq (if not installed)"
   when: auto_cpufreq_installed.rc != 0
@@ -71,8 +73,7 @@
 
     - name: "auto-cpufreq | Run auto-cpufreq installer"
       ansible.builtin.command:
-        cmd: "sudo ./auto-cpufreq-installer"
+        cmd: "./auto-cpufreq-installer"
       args:
         chdir: "/opt/auto-cpufreq/source"
       become: true
-

@@ -1,0 +1,119 @@
+{
+  "folders": [
+    {
+      "path": ".",
+      "name": "dotfiles"
+    }
+  ],
+  "settings": {
+    // Editor Settings
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.rulers": [
+      120
+    ],
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    // File Associations
+    "files.associations": {
+      "*.yml": "ansible",
+      "*.yaml": "ansible",
+      "ansible.cfg": "ini",
+      "inventory.ini": "ini",
+      "Taskfile.yml": "yaml"
+    },
+    // YAML & Ansible Settings
+    "yaml.format.enable": true,
+    "yaml.format.singleQuote": false,
+    "yaml.format.bracketSpacing": true,
+    "yaml.schemas": {
+      "https://taskfile.dev/schema.json": [
+        "Taskfile.yml",
+        "Taskfile.yaml"
+      ]
+    },
+    "ansible.python.interpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "ansible.validation.enabled": true,
+    "ansible.validation.lint.enabled": true,
+    // Python Settings (for Ansible & callback plugins)
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "python.analysis.extraPaths": [
+      "${workspaceFolder}/callback_plugins"
+    ],
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
+    "python.formatting.provider": "black",
+    // Shell Script Settings
+    "shellcheck.enable": true,
+    "shellformat.flag": "-i 2 -ci",
+    // Git Settings
+    "git.ignoreLimitWarning": true,
+    // Files to Exclude from Explorer
+    "files.exclude": {
+      "**/.git": false,
+      "**/.venv": true,
+      "**/__pycache__": true,
+      "**/*.pyc": true,
+      "**/.DS_Store": true,
+      "**/callback_plugins/__pycache__": true
+    },
+    // Search Settings
+    "search.exclude": {
+      "**/.venv": true,
+      "**/__pycache__": true,
+      "**/*.pyc": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "redhat.ansible",
+      "redhat.vscode-yaml",
+      "timonwong.shellcheck",
+      "foxundermoon.shell-format",
+      "ms-python.python",
+      "ms-python.vscode-pylance",
+      "task.vscode-task",
+      "eamodio.gitlens",
+      "ms-azuretools.vscode-docker",
+      "yzhang.markdown-all-in-one",
+      "editorconfig.editorconfig",
+      "streetsidesoftware.code-spell-checker"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Run Ansible Playbook",
+        "type": "shell",
+        "command": "ansible-playbook main.yml",
+        "problemMatcher": [],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      },
+      {
+        "label": "Run Ansible Playbook (Dry Run)",
+        "type": "shell",
+        "command": "ansible-playbook main.yml --check --diff",
+        "problemMatcher": []
+      },
+      {
+        "label": "Ansible Syntax Check",
+        "type": "shell",
+        "command": "ansible-playbook main.yml --syntax-check",
+        "problemMatcher": []
+      },
+      {
+        "label": "Run Task",
+        "type": "shell",
+        "command": "task",
+        "problemMatcher": []
+      }
+    ]
+  }
+}

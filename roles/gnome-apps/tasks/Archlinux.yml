@@ -1,17 +1,16 @@
-- name: gnome-apps | ArchLinux | Install GNOME Apps
-  block:
-    - name: gnome-apps | ArchLinux | Install GNOME applications via pacman
-      pacman:
-        name:
-          - gnome-firmware
-          - gnome-maps
-          - gnome-mines
-          - gnome-music
-          - gnome-photos
-          - gnome-calendar
-          - gnome-contacts
-          - railway
-          - geary
-        state: present
-        update_cache: true
-      become: true
+---
+- name: "gnome-apps | ArchLinux | Install GNOME applications"
+  community.general.pacman:
+    name:
+      - gnome-firmware
+      - gnome-maps
+      - gnome-mines
+      - gnome-music
+      - gnome-photos
+      - gnome-calendar
+      - gnome-contacts
+      - railway
+      - geary
+    state: present
+    update_cache: true
+  become: true

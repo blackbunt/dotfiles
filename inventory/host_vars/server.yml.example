@@ -1,0 +1,46 @@
+---
+# ============================================================================
+# Server Category Configuration
+# ============================================================================
+# Minimal server configuration without GUI apps
+#
+# To use:
+#   1. Copy this to your hostname: cp server.yml.example <hostname>.yml
+#   2. Customize for your specific server
+# ============================================================================
+
+# Roles to run on servers (minimal, no GUI)
+default_roles:
+  - system
+  - git
+  - ssh
+  - tailscale
+  - tldr
+  - zoxide
+  - zsh
+
+# Roles to exclude
+exclude_roles:
+  - alacritty
+  - gnome-wallpaper
+  - gnome-apps
+  - spotify
+  - discord
+  - obsidian
+  - vs-code
+  - auto-cpufreq
+
+# Server-specific settings
+laptop_mode: false
+server_mode: true
+
+# Security settings
+security:
+  ssh_only: true
+  firewall: true
+  fail2ban: true
+
+# Performance
+performance:
+  cpu_governor: "powersave"
+  minimal_services: true

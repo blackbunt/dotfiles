@@ -1,0 +1,86 @@
+# ============================================================================
+# Dotfiles Configuration
+# ============================================================================
+# Copy this file to ~/.dotfiles.conf and customize for your setup
+#
+# Priority order (highest to lowest):
+#   1. Environment variables
+#   2. ~/.dotfiles.conf
+#   3. Default values in script
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Git Repository Settings
+# ----------------------------------------------------------------------------
+# SSH URL (recommended for private repositories)
+# Requires SSH key configured with GitHub/GitLab
+DOTFILES_REPO="git@github.com:blackbunt/dotfiles.git"
+
+# HTTPS URL (fallback, works without SSH keys)
+# Will prompt for credentials if repository is private
+DOTFILES_REPO_HTTPS="https://github.com/blackbunt/dotfiles.git"
+
+# Branch to clone/update
+# Can be used for testing changes or host-specific branches
+DOTFILES_BRANCH="main"
+
+# Directory where dotfiles will be cloned
+# Default: $HOME/.dotfiles
+# DOTFILES_DIR="$HOME/.dotfiles"
+
+# ----------------------------------------------------------------------------
+# Locale Settings (for Arch-based systems)
+# ----------------------------------------------------------------------------
+# Main system language
+LOCALE_LANG="en_GB.UTF-8"
+
+# Number formatting (e.g., 1.000,00 vs 1,000.00)
+LOCALE_NUMERIC="de_DE.UTF-8"
+
+# Date and time format
+LOCALE_TIME="de_DE.UTF-8"
+
+# Currency format
+LOCALE_MONETARY="de_DE.UTF-8"
+
+# Paper size (A4 vs Letter)
+LOCALE_PAPER="de_DE.UTF-8"
+
+# Name formatting
+LOCALE_NAME="de_DE.UTF-8"
+
+# Address formatting
+LOCALE_ADDRESS="de_DE.UTF-8"
+
+# Phone number formatting
+LOCALE_TELEPHONE="de_DE.UTF-8"
+
+# Measurement system (metric vs imperial)
+LOCALE_MEASUREMENT="de_DE.UTF-8"
+
+# Identification
+LOCALE_IDENTIFICATION="de_DE.UTF-8"
+
+# ----------------------------------------------------------------------------
+# Ansible Settings
+# ----------------------------------------------------------------------------
+# Skip asking for sudo password (if you have NOPASSWD configured)
+# SKIP_BECOME_PASS=false
+
+# Additional Ansible arguments
+# ANSIBLE_ARGS="--verbose"
+
+# ----------------------------------------------------------------------------
+# LastPass Settings
+# ----------------------------------------------------------------------------
+# Your LastPass email (required for login)
+LASTPASS_EMAIL="your-email@example.com"
+
+# ----------------------------------------------------------------------------
+# Debug Settings
+# ----------------------------------------------------------------------------
+# Enable verbose output for troubleshooting
+# DEBUG=false
+
+# Keep log file after successful run (normally deleted)
+# KEEP_LOG=false

@@ -59,26 +59,30 @@
     value: true
 
 - name: "git | LastPass | Read user.email secret from LastPass"
-  when: lpass_installed
+  when: lpass_installed.rc == 0
   block:
-    - name: "git | LastPass | Ensure login is successful"
+    - name: "git | LastPass | Check login status"
       ansible.builtin.command:
         cmd: "lpass status"
       register: lpass_status
       changed_when: false
-      failed_when: false  # Verhindern, dass der Task beim fehlenden Login fehlschlägt
+      failed_when: false
+
+    - name: "git | LastPass | Fail if not logged in"
+      ansible.builtin.fail:
+        msg: "LastPass is not logged in! Please run 'lpass login <email>' to authenticate before running this playbook."
+      when: lpass_status.rc != 0
 
     - name: "git | LastPass | Extract email from status"
       ansible.builtin.set_fact:
         git_user_email: "{{ lpass_status.stdout | regex_search('[\\w\\.-]+(?:\\+[\\w\\.-]+)?@[\\w\\.-]+\\.[a-zA-Z]{2,}', '\\0') }}"
-      when: lpass_status.stdout is defined  # Nur ausführen, wenn lpass_status.stdout definiert ist
+      when: lpass_status.rc == 0
+      no_log: true
 
-    - name: "git | LastPass | Handle failure if no email found"
+    - name: "git | LastPass | Fail if no email found"
       ansible.builtin.fail:
-        msg: "No email found in LastPass status"
-      when: git_user_email is not defined  # Fehler, wenn keine E-Mail gefunden wurde
-    
-  no_log: true
+        msg: "No email found in LastPass status. Please check your LastPass configuration."
+      when: lpass_status.rc == 0 and (git_user_email is not defined or git_user_email == "")
 
 
 - name: "git | Set user.email"
@@ -87,7 +91,7 @@
     scope: global
     value: "{{ git_user_email }}"
   no_log: true
-  
+
 - name: "git | Set user.name from email"
   community.general.git_config:
     name: user.name

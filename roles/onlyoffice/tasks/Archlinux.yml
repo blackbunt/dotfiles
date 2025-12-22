@@ -1,83 +1,12 @@
 ---
-- name: onlyoffice | ArchLinux | Install onlyoffice Desktop Suite
-  become: true
-  block:
-    - name: onlyoffice | ArchLinux | Check if yay is installed
-      ansible.builtin.command:
-        cmd: "which yay"
-      register: yay_installed
-      changed_when: false
-      failed_when: yay_installed.rc != 0
-
-    - name: onlyoffice | ArchLinux | Install yay if not present
-      block:
-        - name: onlyoffice | ArchLinux | Install base-devel and git
-          pacman:
-            name:
-              - base-devel
-              - git
-            state: present
-            update_cache: true
-
-        - name: onlyoffice | ArchLinux | Clone yay repository
-          ansible.builtin.git:
-            repo: "https://aur.archlinux.org/yay.git"
-            dest: "/tmp/yay"
-            version: master
-          when: yay_installed.rc != 0
-
-        - name: onlyoffice | ArchLinux | Build and install yay
-          ansible.builtin.command:
-            cmd: "makepkg -si --noconfirm"
-            chdir: "/tmp/yay"
-          when: yay_installed.rc != 0
-          become: false  # AUR-Pakete sollten nicht als Root gebaut werden
-      when: yay_installed.rc != 0
-
-
-
-
-- name: onlyoffice | ArchLinux | Check if onlyoffice is installed
+- name: "onlyoffice | ArchLinux | Check if OnlyOffice is installed"
   ansible.builtin.command:
-    cmd: "pacman -Q onlyoffice-bin"
+    cmd: yay -Q onlyoffice-bin
   register: onlyoffice_installed
-  failed_when: false
   changed_when: false
-  when: yay_installed.rc == 0
+  failed_when: false
 
-- name: onlyoffice | ArchLinux | Version Check
-  block:
-    - name: onlyoffice | ArchLinux | Get available version of onlyoffice from yay
-      ansible.builtin.command:
-        cmd: "yay -Qi onlyoffice-bin | grep 'Version' | awk '{print $3}'"
-      register: available_version
-      failed_when: false
-      changed_when: false
-      when: onlyoffice_installed.rc == 0  # Proceed only if onlyoffice is installed
-
-    - name: onlyoffice | ArchLinux | Compare installed version with available version
-      ansible.builtin.command:
-        cmd: "version {{ onlyoffice_installed.stdout.split(' ')[1] }} -lt {{ available_version.stdout }}"
-      register: version_comparison
-      failed_when: false
-      changed_when: true
-      when: onlyoffice_installed.rc == 0  # Only compare if it's installed
-
-    - name: onlyoffice | ArchLinux | Install onlyoffice if newer version available
-      ansible.builtin.command:
-        cmd: "yay -S --noconfirm onlyoffice-bin"
-      changed_when: true
-      become: false
-      when: version_comparison.rc == 0
-  when: onlyoffice_installed.rc == 0 and yay_installed.rc == 0
-  
-# TODO BUGFIX WITH VERSION
-- name: onlyoffice | ArchLinux | Install onlyoffice if not installed
+- name: "onlyoffice | ArchLinux | Install OnlyOffice from AUR"
   ansible.builtin.command:
-    cmd: "yay -S --noconfirm onlyoffice-bin"
-  changed_when: true
-  become: false
-  when: onlyoffice_installed != 0
-
-    
-
+    cmd: yay -S --noconfirm onlyoffice-bin
+  when: onlyoffice_installed.rc != 0
