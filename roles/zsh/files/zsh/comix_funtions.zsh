@@ -23,6 +23,8 @@ Options:
     -k, --keep            Keep original .cbr after successful conversion
             --no-optimize     Skip image optimization (faster, larger files)
             --jpg-quality N   JPEG quality (default: 85) when optimizing
+            --analyze         Analyze potential savings only; do not modify/create files
+            --analyze-th N    Report only if potential saving >= N%% (default: 2)
     -h, --help            Show this help
 
 Notes:
@@ -71,9 +73,10 @@ _optimize_images() {
 }
 
 cbr2cbz() {
-    setopt local_options no_nomatch
+    # Ensure this function doesn't abort due to external tool failures
+    setopt local_options no_nomatch no_err_exit
 
-    local force=0 keep=0 do_optimize=1 jpg_quality=85
+    local force=0 keep=0 do_optimize=1 jpg_quality=85 analyze=0 analyze_th=2
     local args=()
 
     while [[ $# -gt 0 ]]; do
@@ -81,6 +84,8 @@ cbr2cbz() {
             -f|--force) force=1; shift ;;
             -k|--keep) keep=1; shift ;;
             --no-optimize) do_optimize=0; shift ;;
+            --analyze) analyze=1; shift ;;
+            --analyze-th) shift; [[ -n "$1" ]] || { echo "--analyze-th requires a value" >&2; return 2; }; analyze_th="$1"; shift ;;
             --jpg-quality)
                 shift; [[ -n "$1" ]] || { echo "--jpg-quality requires a value" >&2; return 2; }
                 jpg_quality="$1"; shift ;;
@@ -111,7 +116,7 @@ cbr2cbz() {
 
         if [[ -d "$input" ]]; then
             __task "Scan directory for .cbr: $input"
-            _cmd "find \"$input\" -type f -iname '*.cbr' -print0 | xargs -0 -I{} zsh -c 'cbr2cbz ${force:+--force} ${keep:+--keep} ${do_optimize:+} ${do_optimize:---no-optimize} --jpg-quality $jpg_quality \"{}\"'"
+            _cmd "find \"$input\" -type f -iname '*.cbr' -print0 | xargs -0 -I{} zsh -c 'cbr2cbz ${force:+--force} ${keep:+--keep} ${do_optimize:+} ${do_optimize:---no-optimize} ${analyze:+--analyze} --analyze-th $analyze_th --jpg-quality $jpg_quality \"{}\"'"
             _task_done
             continue
         fi
@@ -144,6 +149,73 @@ cbr2cbz() {
             continue
         fi
         _task_done
+
+        if (( analyze )); then
+            __task "Analyze potential savings in extracted content"
+            local orig_total=0 opt_total=0 count_png=0 count_jpg=0 save_png=0 save_jpg=0
+            local f ext src_size new_size pct tmp_anadir
+            tmp_anadir="$(mktemp -d)"
+            # Walk images
+            while IFS= read -r -d '' f; do
+                ext="${f##*.}"; ext="${ext:l}"
+                src_size=$(wc -c < "$f" | tr -d ' ')
+                (( orig_total += src_size ))
+                mkdir -p "$tmp_anadir"
+                local tmpf="$tmp_anadir/$(basename "$f")"
+                cp -f -- "$f" "$tmpf" 2>/dev/null || { continue; }
+                case "$ext" in
+                    png)
+                        (( count_png++ ))
+                        if command -v oxipng >/dev/null 2>&1; then
+                            oxipng -o 4 -strip all -q "$tmpf" >/dev/null 2>&1 || true
+                            new_size=$(wc -c < "$tmpf" | tr -d ' ')
+                            (( opt_total += new_size ))
+                            if (( src_size > 0 )); then
+                                pct=$(( (100*(src_size-new_size))/src_size ))
+                                (( pct >= analyze_th )) && (( save_png++ ))
+                            fi
+                        fi
+                        ;;
+                    jpg|jpeg)
+                        (( count_jpg++ ))
+                        if command -v jpegoptim >/dev/null 2>&1; then
+                            jpegoptim --max=$jpg_quality --strip-all --all-progressive --quiet "$tmpf" >/dev/null 2>&1 || true
+                            new_size=$(wc -c < "$tmpf" | tr -d ' ')
+                            (( opt_total += new_size ))
+                            if (( src_size > 0 )); then
+                                pct=$(( (100*(src_size-new_size))/src_size ))
+                                (( pct >= analyze_th )) && (( save_jpg++ ))
+                            fi
+                        elif command -v jpegtran >/dev/null 2>&1; then
+                            # lossless try
+                            local tmpf2="$tmpf.out"
+                            jpegtran -copy none -optimize -progressive "$f" > "$tmpf2" 2>/dev/null || cp -f "$f" "$tmpf2"
+                            new_size=$(wc -c < "$tmpf2" | tr -d ' ')
+                            mv -f "$tmpf2" "$tmpf" 2>/dev/null || true
+                            (( opt_total += new_size ))
+                            if (( src_size > 0 )); then
+                                pct=$(( (100*(src_size-new_size))/src_size ))
+                                (( pct >= analyze_th )) && (( save_jpg++ ))
+                            fi
+                        fi
+                        ;;
+                esac
+            done < <(find "$TMP_DIR" -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -print0)
+            rm -rf "$tmp_anadir" 2>/dev/null || true
+            _task_done
+            # Summary
+            local saved=$(( orig_total - opt_total ))
+            if (( orig_total > 0 )); then
+                local pct_total=$(( (100*saved)/orig_total ))
+                echo "ANALYZE: images=$((count_png+count_jpg)) png=$count_png(jobs>=$analyze_th%:$save_png) jpg=$count_jpg(jobs>=$analyze_th%:$save_jpg) potential_saved=${saved}B (~${pct_total}%)"
+            else
+                echo "ANALYZE: no images found"
+            fi
+            __task "Cleanup"
+            cleanup; trap - EXIT INT TERM
+            _task_done
+            continue
+        fi
 
         if (( do_optimize )); then
             __task "Optimize images (PNG/JPEG)"
