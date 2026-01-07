@@ -47,7 +47,7 @@ __egpu_task_warn() {
 __egpu_debug() {
   [[ $__COMPACT_MODE -eq 1 ]] && return
   local msg="$*"
-  printf "${LBLACK}      └─ ${msg}${NC}\n"
+  printf "${LIGHTGRAY}      └─ ${msg}${NC}\n"
 }
 
 __egpu_header() {
@@ -72,41 +72,49 @@ __egpu_section() {
 __detect_amd_gpus() {
   local gpus=()
   local lspci_output
-  
-  __egpu_task "Detecting GPUs"
-  
-  # Search for GPU devices (any VGA/Display controllers)
-  lspci_output=$(lspci | grep -iE "vga.*controller|display.*controller|3d.*controller" 2>/dev/null || true)
-  
+
+  __egpu_task "Detecting external AMD GPU"
+
+  # Search for AMD/ATI GPU devices only (skip Intel/NVIDIA integrated)
+  lspci_output=$(lspci | grep -iE "(vga|display|3d).*controller" | grep -iE "AMD|ATI|Radeon" 2>/dev/null || true)
+
   if [[ -z "$lspci_output" ]]; then
-    __egpu_task_fail "No GPUs detected"
+    __egpu_task_fail "No AMD GPU detected"
     return 1
   fi
-  
-  # Parse GPU information
+
+  # Parse GPU information - only external GPUs (PCI bus > 00)
   while IFS= read -r line; do
     if [[ -n "$line" ]]; then
       local pci_id=$(echo "$line" | awk '{print $1}')
+      local pci_bus="${pci_id%%:*}"
+
+      # Skip GPUs on bus 00 (integrated/internal)
+      if [[ "$pci_bus" == "00" ]]; then
+        __egpu_debug "Skipping internal GPU on bus 00"
+        continue
+      fi
+
       # Extract the GPU model name from brackets (e.g., "Radeon RX 6800")
       local gpu_name=$(echo "$line" | sed 's/.*\[//; s/\].*//')
-      
+
       gpus+=("$pci_id:$gpu_name")
       EGPU_INFO[gpu_name]="$gpu_name"
       EGPU_INFO[pci_id]="$pci_id"
       __egpu_debug "Found: $gpu_name ($pci_id)"
     fi
   done <<< "$lspci_output"
-  
+
   # Try to get exact GPU name from vulkaninfo or glxinfo
   __detect_exact_gpu_name
-  
+
   if [[ ${#gpus[@]} -gt 0 ]]; then
     EGPU_INFO[gpu_count]=${#gpus[@]}
     EGPU_INFO[gpus]="${(j:|:)gpus[@]}"
-    __egpu_task_ok "Detected ${#gpus[@]} GPU(s)"
+    __egpu_task_ok "Detected ${#gpus[@]} external AMD GPU(s)"
     return 0
   else
-    __egpu_task_fail "Failed to parse GPU information"
+    __egpu_task_fail "No external AMD GPU found"
     return 1
   fi
 }
@@ -143,25 +151,25 @@ __detect_exact_gpu_name() {
 
 __detect_thunderbolt() {
   __egpu_task "Checking external device connections"
-  
+
   if ! command -v boltctl &>/dev/null; then
     __egpu_task_warn "boltctl not available (Thunderbolt support optional)"
     return 1
   fi
-  
+
   local devices
   devices=$(boltctl list 2>/dev/null)
-  
+
   if [[ -z "$devices" ]]; then
     __egpu_task_warn "No Thunderbolt devices found"
     __egpu_debug "Connect device and power on enclosure"
     return 1
   fi
-  
+
   # Check authorization status
   local authorized=0
   local unauthorized=0
-  
+
   # Count devices by checking for authorization symbols
   while IFS= read -r line; do
     if [[ "$line" =~ "✓" ]]; then
@@ -170,10 +178,28 @@ __detect_thunderbolt() {
       ((unauthorized++))
     fi
   done <<< "$devices"
-  
+
   EGPU_INFO[tb_authorized]=$authorized
   EGPU_INFO[tb_unauthorized]=$unauthorized
-  
+
+  # Check link speed (TB3 full speed = 40 Gb/s = 2 lanes × 20 Gb/s)
+  local rx_speed tx_speed
+  rx_speed=$(echo "$devices" | grep -oP 'rx speed:\s+\K\d+' | head -1)
+  tx_speed=$(echo "$devices" | grep -oP 'tx speed:\s+\K\d+' | head -1)
+
+  if [[ -n "$rx_speed" ]]; then
+    EGPU_INFO[tb_rx_speed]="$rx_speed"
+    EGPU_INFO[tb_tx_speed]="$tx_speed"
+
+    if (( rx_speed >= 40 )); then
+      __egpu_debug "Link speed: ${rx_speed} Gb/s (full speed)"
+    elif (( rx_speed >= 20 )); then
+      __egpu_debug "${LYELLOW}Link speed: ${rx_speed} Gb/s (reduced - check cable)${NC}"
+    else
+      __egpu_debug "${LRED}Link speed: ${rx_speed} Gb/s (slow cable!)${NC}"
+    fi
+  fi
+
   if (( unauthorized > 0 )); then
     __egpu_task_warn "Found $unauthorized unauthorized device(s)"
     return 1
@@ -295,19 +321,40 @@ __detect_opengl() {
 
 __detect_vram() {
   __egpu_task "Detecting GPU VRAM"
-  
+
+  local vram_bytes vram_gb
+
+  # Method 1: Read from sysfs (most reliable for AMD GPUs)
+  for card_dir in /sys/class/drm/card*/device; do
+    if [[ -f "$card_dir/mem_info_vram_total" ]]; then
+      # Check if this is an AMD GPU (has amdgpu driver)
+      local driver_link="$card_dir/driver"
+      if [[ -L "$driver_link" && "$(readlink "$driver_link")" == *"amdgpu"* ]]; then
+        vram_bytes=$(cat "$card_dir/mem_info_vram_total" 2>/dev/null)
+        if [[ -n "$vram_bytes" && "$vram_bytes" -gt 0 ]]; then
+          vram_gb=$(awk "BEGIN {printf \"%.0f\", $vram_bytes / 1024 / 1024 / 1024}")
+          EGPU_INFO[vram]="$vram_gb GB"
+          EGPU_INFO[vram_bytes]="$vram_bytes"
+          __egpu_task_ok "VRAM: ${vram_gb} GB"
+          return 0
+        fi
+      fi
+    fi
+  done
+
+  # Method 2: Fallback to dmesg
   local vram_info
   vram_info=$(dmesg 2>/dev/null | grep -i "amdgpu.*vram" | tail -1 || true)
-  
+
   if [[ -n "$vram_info" ]]; then
     EGPU_INFO[vram]="$vram_info"
     __egpu_task_ok "VRAM information detected"
     __egpu_debug "${vram_info:0:80}..."
     return 0
-  else
-    __egpu_task_warn "Could not determine VRAM size"
-    return 1
   fi
+
+  __egpu_task_warn "Could not determine VRAM size"
+  return 1
 }
 
 # ============================================================================
@@ -414,10 +461,10 @@ __print_summary() {
   if [[ $__COMPACT_MODE -eq 1 ]]; then
     local gpu_display="${EGPU_INFO[gpu_name]:-eGPU}"
     if [[ "$ready" == "yes" && $ERROR_COUNT -eq 0 ]]; then
-      printf "${LGREEN}✓${NC} ${LBLACK}${gpu_display}${NC} ${LGREEN}ready${NC} (${SUCCESS_COUNT}✓ ${WARNING_COUNT}! ${ERROR_COUNT}✗)\n"
+      printf "${LGREEN}✓${NC} ${LIGHTGRAY}${gpu_display}${NC} ${LGREEN}ready${NC} (${SUCCESS_COUNT}✓ ${WARNING_COUNT}! ${ERROR_COUNT}✗)\n"
       return 0
     else
-      printf "${LRED}✗${NC} ${LBLACK}${gpu_display}${NC} ${LRED}not ready${NC} (${SUCCESS_COUNT}✓ ${WARNING_COUNT}! ${ERROR_COUNT}✗)\n"
+      printf "${LRED}✗${NC} ${LIGHTGRAY}${gpu_display}${NC} ${LRED}not ready${NC} (${SUCCESS_COUNT}✓ ${WARNING_COUNT}! ${ERROR_COUNT}✗)\n"
       return 1
     fi
   fi
